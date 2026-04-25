@@ -1,0 +1,10 @@
+{
+  "id": "example-notebook-replay",
+  "model": "mistral-ocr-latest",
+  "pages": [
+    {
+      "index": 0,
+      "markdown": "## GAZETTE NOTICE NO. 5969\n\nTHE LAND REGISTRATION ACT\n\nIN EXERCISE of the powers conferred by law, the Registrar gives notice.\n\n| Parcel | Owner |\n| --- | --- |\n| Kajiado/1 | Jane Doe |\n\nDated the 17th April, 2026.\n\nREGISTRAR,\nLands Registry."
+    }
+  ]
+}

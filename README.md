@@ -41,11 +41,34 @@ network calls.
 ## Public API
 
 ```python
-from gazette_mistral_pipeline import parse_file, parse_url, write_envelope
+from pathlib import Path
 
-env = parse_url("https://example.com/source.pdf")
-written = write_envelope(env, "prototype_outputs/example")
+from gazette_mistral_pipeline import Bundles, GazetteConfig, parse_url, write_envelope
+
+config = GazetteConfig(
+    runtime={
+        "replay_raw_json_path": Path("examples/tiny_replay.raw.json"),
+        "output_dir": Path("examples/_example_outputs/stage"),
+    }
+)
+
+env = parse_url("https://example.com/source.pdf", config=config)
+written = write_envelope(
+    env,
+    "examples/_example_outputs/bundles",
+    Bundles(notices=True, tables=True, document_index=True),
+)
 ```
+
+## Notebook Example
+
+Use `examples/gazette_package_driver.ipynb` as the recommended notebook driver.
+It imports package-root APIs and defaults to offline replay with the tiny
+`examples/tiny_replay.raw.json` fixture, so it does not require `MISTRAL_API_KEY`,
+network access, `.env`, live Mistral calls, or historical `prototype_outputs`.
+
+The root `gazette_etl_prototype.ipynb` is historical prototype context only and
+is not the current user entry point.
 
 ## Runtime Dependencies
 

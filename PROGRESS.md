@@ -18,9 +18,9 @@ Session-start prompt:
 
 ## Today
 
-**Current:** F13 - Notebook driver cleanup  
-**What:** Convert notebooks into thin examples over the package API.  
-**Where:** Notebook/example cleanup to be specified  
+**Current:** F13 ✅ - Notebook driver cleanup complete  
+**What:** Recommended notebook driver now uses the package API in offline replay mode.  
+**Where:** `examples/gazette_package_driver.ipynb`, `README.md`, notebook hygiene tests  
 **Previous:** F12 ✅ - Installable package smoke test implemented and tested.
 
 ## Work Items
@@ -39,7 +39,7 @@ Session-start prompt:
 | F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ✅ Complete | 53fcd0b |
 | F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ✅ Complete | 53fcd0b |
 | F12 | Installable package smoke test | Verify install, imports, schema package data, and git-install readiness | ✅ Complete | 47083f2 |
-| F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ⬜ Next | - |
+| F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ✅ Complete | - |
 
 ## Quality Gates
 
@@ -56,8 +56,8 @@ Session-start prompt:
 
 | ID | Item | Type | Target | Consequence if forgotten |
 |----|------|------|--------|--------------------------|
-| D1 | Prototype parsing logic remains in notebooks alongside package parser | Active debt | F13 | Parser behavior can drift if notebooks are not converted into thin package examples |
-| D2 | Existing notebooks may contain stale execution output and paths | Enduring gotcha | - | Visual notebook output may not reflect current code until cells are rerun |
+| D1 | Recommended notebook path uses package APIs instead of prototype parser logic | Closed in F13 | - | Historical prototype code is retained only as labeled context, not as the supported package example |
+| D2 | Existing notebook output staleness is narrowed to historical prototype context | Enduring gotcha | - | The recommended driver has cleared outputs; the historical prototype may still show stale bounded output until rerun |
 | D3 | Mistral API calls must be opt-in in tests | Enduring gotcha | - | Normal test runs could become slow, flaky, or billable |
 | D4 | Mistral response JSON may not contain word-level coordinates | Enduring gotcha | - | Spatial hints can improve provenance but cannot promise full reading-order reconstruction |
 | D5 | API keys must come from environment/config, not checked-in notebooks or fixtures | Enduring gotcha | - | Secret leakage risk |
@@ -82,6 +82,7 @@ Session-start prompt:
 - `specs/F10-public-api-and-bundle-writer.md` - completed public API and bundle writer spec
 - `specs/F11-json-schema-export.md` - completed JSON Schema export spec
 - `specs/F12-installable-package-smoke-test.md` - completed installable package smoke test spec
+- `specs/F13-notebook-driver-cleanup.md` - completed notebook driver cleanup spec
 
 ## Session Log
 
@@ -99,5 +100,6 @@ Session-start prompt:
 | 2026-04-25 | F10 Public API and bundle writer | Wired package-root parse functions through F04-F09, added explicit replay/live/output runtime controls, implemented deterministic bundle writing, kept schema helpers as F11 stubs, and added F10 public API/bundle writer tests. `python -m pytest tests/test_public_api.py tests/test_bundle_writer.py` and `python -m pytest` passed. |
 | 2026-04-25 | F11 JSON Schema export | Added package-root schema export and validation helpers, checked-in deterministic envelope schema package data, schema bundle writing, and F11 tests. `python -m pytest tests/test_schema_export.py tests/test_public_api.py tests/test_bundle_writer.py` and `python -m pytest` passed. |
 | 2026-04-25 | F12 Installable package smoke test | Added a standalone fresh-venv local install smoke with wheel content inspection, installed-package import/resource/metadata checks, optional explicit Git URL mode, and offline replay parse/write/schema validation. `python -m pytest tests/test_install_smoke.py`, `python scripts/install_smoke.py --repo-path . --mode local-path`, and `python -m pytest` passed. |
+| 2026-04-25 | F13 Notebook driver cleanup | Added the thin offline replay notebook driver, tiny replay fixture, README guidance, historical prototype labeling/default-offline guard, and static notebook hygiene tests. `python -m pytest tests/test_notebook_examples.py`, `python -m pytest tests/test_public_api.py tests/test_bundle_writer.py tests/test_install_smoke.py`, and `python -m pytest` passed. |
 
 Add a row here at the end of every session.
