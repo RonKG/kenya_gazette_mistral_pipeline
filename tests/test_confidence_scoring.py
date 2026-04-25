@@ -4,7 +4,6 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-import gazette_mistral_pipeline as gmp
 from gazette_mistral_pipeline.confidence_scoring import (
     ScoredParsingResult,
     aggregate_document_confidence,
@@ -408,15 +407,6 @@ def test_spatial_availability_informs_document_confidence_lightly() -> None:
         with_coordinates.document_confidence.spatial
         != without_coordinates.document_confidence.spatial
     )
-
-
-def test_public_parse_api_remains_unwired_after_f08() -> None:
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_file("example.pdf")
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_url("https://example.com/source.pdf")
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_source("example.pdf")
 
 
 def test_result_dataclass_is_frozen() -> None:

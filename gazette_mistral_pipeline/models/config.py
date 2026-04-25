@@ -22,6 +22,8 @@ class RuntimeOptions(StrictBase):
     """Runtime controls for deterministic and replayed runs."""
 
     replay_raw_json_path: Path | None = None
+    output_dir: Path | None = None
+    allow_live_mistral: bool = False
     deterministic: bool = True
 
 

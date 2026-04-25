@@ -47,7 +47,7 @@ include = ["gazette_mistral_pipeline*"]
 exclude = ["tests*", "docs*", "specs*", "prototype_outputs*", ".venv*"]
 
 [tool.setuptools.package-data]
-gazette_mistral_pipeline = ["py.typed"]
+gazette_mistral_pipeline = ["py.typed", "schemas/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

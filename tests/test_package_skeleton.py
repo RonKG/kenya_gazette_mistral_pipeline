@@ -4,8 +4,6 @@ import inspect
 import tomllib
 from pathlib import Path
 
-import pytest
-
 import gazette_mistral_pipeline as gmp
 
 
@@ -27,29 +25,11 @@ def test_public_imports_and_version() -> None:
         assert hasattr(gmp, name)
 
 
-@pytest.mark.parametrize(
-    ("name", "args", "kwargs", "future_feature"),
-    [
-        ("parse_file", ("example.pdf",), {}, "F10 after F04-F09"),
-        ("parse_url", ("https://example.com/source.pdf",), {}, "F10 after F04-F09"),
-        ("parse_source", ("example.pdf",), {}, "F10 after F04-F09"),
-        ("write_envelope", ({}, "out"), {}, "F10"),
-        ("get_envelope_schema", (), {}, "F11"),
-        ("validate_envelope_json", ({},), {}, "F11"),
-    ],
-)
-def test_public_stubs_raise_clear_not_implemented(
-    name: str,
-    args: tuple,
-    kwargs: dict,
-    future_feature: str,
-) -> None:
-    fn = getattr(gmp, name)
-    with pytest.raises(NotImplementedError) as excinfo:
-        fn(*args, **kwargs)
-    message = str(excinfo.value)
-    assert "F02 package skeleton stub" in message
-    assert future_feature in message
+def test_f11_schema_helper_is_available() -> None:
+    schema = gmp.get_envelope_schema()
+
+    assert schema["title"] == "Envelope"
+    assert "source" in schema["properties"]
 
 
 def test_public_stub_signatures_are_stable() -> None:
@@ -64,6 +44,10 @@ def test_public_stub_signatures_are_stable() -> None:
     parse_source_sig = inspect.signature(gmp.parse_source)
     assert list(parse_source_sig.parameters) == ["source", "config"]
     assert parse_source_sig.parameters["config"].kind is inspect.Parameter.KEYWORD_ONLY
+
+    schema_sig = inspect.signature(gmp.get_envelope_schema)
+    assert list(schema_sig.parameters) == ["use_cache"]
+    assert schema_sig.parameters["use_cache"].kind is inspect.Parameter.KEYWORD_ONLY
 
 
 def test_pyproject_metadata_has_expected_runtime_dependencies() -> None:

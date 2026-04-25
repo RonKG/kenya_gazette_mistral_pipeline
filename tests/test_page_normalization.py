@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-import gazette_mistral_pipeline as gmp
 from gazette_mistral_pipeline.models import Stats
 from gazette_mistral_pipeline.page_normalization import (
     NormalizedPage,
@@ -277,22 +276,6 @@ def test_load_mistral_blocks_file_errors_are_clear(
 
     with pytest.raises((FileNotFoundError, ValueError), match=match):
         load_mistral_blocks(path)
-
-
-def test_public_parse_api_remains_stubbed() -> None:
-    raw_source = {
-        "source_type": "pdf_url",
-        "source_value": "https://example.com/source.pdf",
-        "run_name": "source",
-        "source_sha256": "a" * 64,
-    }
-
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_file("example.pdf")
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_url("https://example.com/source.pdf")
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_source(raw_source)
 
 
 def test_json_file_input_accepts_same_shape_as_loaded_object(tmp_path: Path) -> None:

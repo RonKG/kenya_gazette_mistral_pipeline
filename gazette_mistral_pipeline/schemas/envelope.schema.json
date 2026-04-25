@@ -1,0 +1,789 @@
+{
+  "$defs": {
+    "ConfidenceScores": {
+      "additionalProperties": false,
+      "description": "Per-notice confidence scores and band.",
+      "properties": {
+        "band": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Band",
+          "type": "string"
+        },
+        "boundary": {
+          "title": "Boundary",
+          "type": "number"
+        },
+        "composite": {
+          "title": "Composite",
+          "type": "number"
+        },
+        "notice_number": {
+          "title": "Notice Number",
+          "type": "number"
+        },
+        "spatial": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spatial"
+        },
+        "structure": {
+          "title": "Structure",
+          "type": "number"
+        },
+        "table": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table"
+        }
+      },
+      "required": [
+        "notice_number",
+        "structure",
+        "boundary",
+        "composite",
+        "band"
+      ],
+      "title": "ConfidenceScores",
+      "type": "object"
+    },
+    "Corrigendum": {
+      "additionalProperties": false,
+      "description": "Lightweight corrigendum placeholder until F07 extraction.",
+      "properties": {
+        "amendment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amendment"
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Provenance"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "raw_text": {
+          "title": "Raw Text",
+          "type": "string"
+        },
+        "target_notice_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Notice No"
+        },
+        "target_year": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Target Year"
+        }
+      },
+      "required": [
+        "raw_text"
+      ],
+      "title": "Corrigendum",
+      "type": "object"
+    },
+    "DocumentConfidence": {
+      "additionalProperties": false,
+      "description": "Aggregated confidence for one parsed gazette.",
+      "properties": {
+        "composite": {
+          "title": "Composite",
+          "type": "number"
+        },
+        "counts": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "propertyNames": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "title": "Counts",
+          "type": "object"
+        },
+        "mean_composite": {
+          "title": "Mean Composite",
+          "type": "number"
+        },
+        "min_composite": {
+          "title": "Min Composite",
+          "type": "number"
+        },
+        "n_notices": {
+          "title": "N Notices",
+          "type": "integer"
+        },
+        "notice_split": {
+          "title": "Notice Split",
+          "type": "number"
+        },
+        "ocr_quality": {
+          "title": "Ocr Quality",
+          "type": "number"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "spatial": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Spatial"
+        },
+        "table_quality": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table Quality"
+        }
+      },
+      "required": [
+        "ocr_quality",
+        "notice_split",
+        "composite",
+        "counts",
+        "mean_composite",
+        "min_composite",
+        "n_notices"
+      ],
+      "title": "DocumentConfidence",
+      "type": "object"
+    },
+    "ExtractedTable": {
+      "additionalProperties": true,
+      "description": "Markdown-derived table attached to a notice.\n\nThis is the only model that allows extra fields so table extraction can\nevolve without breaking v1 consumers.",
+      "properties": {
+        "column_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Column Count"
+        },
+        "headers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Headers",
+          "type": "array"
+        },
+        "raw_table_markdown": {
+          "title": "Raw Table Markdown",
+          "type": "string"
+        },
+        "records": {
+          "items": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "title": "Records",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "source": {
+          "default": "markdown_table_heuristic",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "headers",
+        "rows",
+        "raw_table_markdown"
+      ],
+      "title": "ExtractedTable",
+      "type": "object"
+    },
+    "LayoutInfo": {
+      "additionalProperties": false,
+      "description": "Optional spatial hints derived from Mistral response JSON.",
+      "properties": {
+        "available": {
+          "default": false,
+          "title": "Available",
+          "type": "boolean"
+        },
+        "layout_confidence": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Layout Confidence"
+        },
+        "pages": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Pages",
+          "type": "array"
+        },
+        "positioned_element_count": {
+          "default": 0,
+          "title": "Positioned Element Count",
+          "type": "integer"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        }
+      },
+      "title": "LayoutInfo",
+      "type": "object"
+    },
+    "MistralMetadata": {
+      "additionalProperties": false,
+      "description": "Metadata for the Mistral OCR request and cached response.",
+      "properties": {
+        "document_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Document Url"
+        },
+        "mistral_doc_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Mistral Doc Ids",
+          "type": "array"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "page_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page Count"
+        },
+        "raw_json_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw Json Path"
+        },
+        "raw_json_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw Json Sha256"
+        },
+        "request_options": {
+          "additionalProperties": true,
+          "title": "Request Options",
+          "type": "object"
+        }
+      },
+      "required": [
+        "model"
+      ],
+      "title": "MistralMetadata",
+      "type": "object"
+    },
+    "Notice": {
+      "additionalProperties": false,
+      "description": "Parsed gazette notice.",
+      "properties": {
+        "confidence_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Confidence Reasons",
+          "type": "array"
+        },
+        "confidence_scores": {
+          "$ref": "#/$defs/ConfidenceScores"
+        },
+        "content_sha256": {
+          "title": "Content Sha256",
+          "type": "string"
+        },
+        "dates_found": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dates Found",
+          "type": "array"
+        },
+        "notice_id": {
+          "title": "Notice Id",
+          "type": "string"
+        },
+        "notice_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notice No"
+        },
+        "other_attributes": {
+          "additionalProperties": true,
+          "title": "Other Attributes",
+          "type": "object"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "raw_markdown": {
+          "title": "Raw Markdown",
+          "type": "string"
+        },
+        "table_count": {
+          "title": "Table Count",
+          "type": "integer"
+        },
+        "tables": {
+          "items": {
+            "$ref": "#/$defs/ExtractedTable"
+          },
+          "title": "Tables",
+          "type": "array"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "title_lines": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Title Lines",
+          "type": "array"
+        }
+      },
+      "required": [
+        "notice_id",
+        "text",
+        "raw_markdown",
+        "table_count",
+        "provenance",
+        "confidence_scores",
+        "content_sha256"
+      ],
+      "title": "Notice",
+      "type": "object"
+    },
+    "PdfSource": {
+      "additionalProperties": false,
+      "description": "Resolved PDF source for one pipeline run.",
+      "properties": {
+        "run_name": {
+          "title": "Run Name",
+          "type": "string"
+        },
+        "source_metadata_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Metadata Path"
+        },
+        "source_sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Sha256"
+        },
+        "source_type": {
+          "enum": [
+            "pdf_url",
+            "local_pdf"
+          ],
+          "title": "Source Type",
+          "type": "string"
+        },
+        "source_value": {
+          "title": "Source Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_type",
+        "source_value",
+        "run_name"
+      ],
+      "title": "PdfSource",
+      "type": "object"
+    },
+    "PipelineWarning": {
+      "additionalProperties": false,
+      "description": "Structured pipeline warning.",
+      "properties": {
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "where": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Where"
+        }
+      },
+      "required": [
+        "kind",
+        "message"
+      ],
+      "title": "PipelineWarning",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Where a parsed notice or corrigendum came from.",
+      "properties": {
+        "header_match": {
+          "enum": [
+            "strict",
+            "recovered",
+            "inferred",
+            "none"
+          ],
+          "title": "Header Match",
+          "type": "string"
+        },
+        "line_span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line Span"
+        },
+        "page_span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page Span"
+        },
+        "raw_header_line": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw Header Line"
+        },
+        "source_markdown_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Markdown Path"
+        },
+        "stitched_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Stitched From",
+          "type": "array"
+        }
+      },
+      "required": [
+        "header_match"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Stats": {
+      "additionalProperties": false,
+      "description": "Document-level extraction counts.",
+      "properties": {
+        "char_count_markdown": {
+          "title": "Char Count Markdown",
+          "type": "integer"
+        },
+        "document_count": {
+          "title": "Document Count",
+          "type": "integer"
+        },
+        "notice_count": {
+          "title": "Notice Count",
+          "type": "integer"
+        },
+        "page_count": {
+          "title": "Page Count",
+          "type": "integer"
+        },
+        "table_count": {
+          "title": "Table Count",
+          "type": "integer"
+        },
+        "warnings_count": {
+          "default": 0,
+          "title": "Warnings Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "document_count",
+        "page_count",
+        "notice_count",
+        "table_count",
+        "char_count_markdown"
+      ],
+      "title": "Stats",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Validated output envelope for the Mistral pipeline.",
+  "properties": {
+    "corrigenda": {
+      "items": {
+        "$ref": "#/$defs/Corrigendum"
+      },
+      "title": "Corrigenda",
+      "type": "array"
+    },
+    "document_confidence": {
+      "$ref": "#/$defs/DocumentConfidence"
+    },
+    "generated_at_utc": {
+      "format": "date-time",
+      "title": "Generated At Utc",
+      "type": "string"
+    },
+    "layout_info": {
+      "$ref": "#/$defs/LayoutInfo"
+    },
+    "library_version": {
+      "title": "Library Version",
+      "type": "string"
+    },
+    "mistral": {
+      "$ref": "#/$defs/MistralMetadata"
+    },
+    "notices": {
+      "items": {
+        "$ref": "#/$defs/Notice"
+      },
+      "title": "Notices",
+      "type": "array"
+    },
+    "output_format_version": {
+      "title": "Output Format Version",
+      "type": "integer"
+    },
+    "schema_version": {
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/$defs/PdfSource"
+    },
+    "stats": {
+      "$ref": "#/$defs/Stats"
+    },
+    "tables": {
+      "items": {
+        "$ref": "#/$defs/ExtractedTable"
+      },
+      "title": "Tables",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "$ref": "#/$defs/PipelineWarning"
+      },
+      "title": "Warnings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "library_version",
+    "schema_version",
+    "output_format_version",
+    "generated_at_utc",
+    "source",
+    "mistral",
+    "stats",
+    "notices",
+    "document_confidence",
+    "layout_info"
+  ],
+  "title": "Envelope",
+  "type": "object",
+  "x-library-version": "0.1.0",
+  "x-output-format-version": 1,
+  "x-schema-version": "0.1"
+}

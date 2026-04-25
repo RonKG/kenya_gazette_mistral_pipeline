@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 
-import gazette_mistral_pipeline as gmp
 from gazette_mistral_pipeline.mistral_ocr import (
     MISTRAL_OCR_URL,
     build_document_url_ocr_body,
@@ -334,14 +333,3 @@ def test_live_local_pdf_is_explicitly_unsupported_without_network(
     assert not list(tmp_path.glob("*.raw.json"))
 
 
-@pytest.mark.parametrize(
-    ("name", "args"),
-    [
-        ("parse_file", ("example.pdf",)),
-        ("parse_url", (KENYALAW_URL,)),
-        ("parse_source", (_pdf_url_source(),)),
-    ],
-)
-def test_public_parse_api_remains_stubbed(name: str, args: tuple[object, ...]) -> None:
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        getattr(gmp, name)(*args)

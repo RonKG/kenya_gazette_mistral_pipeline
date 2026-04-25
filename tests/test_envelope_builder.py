@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-import gazette_mistral_pipeline as gmp
 from gazette_mistral_pipeline.__version__ import LIBRARY_VERSION, SCHEMA_VERSION
 from gazette_mistral_pipeline.confidence_scoring import (
     ScoredParsingResult,
@@ -338,17 +337,6 @@ def test_stitched_markdown_result_can_supply_f06_stats() -> None:
     assert env.stats.document_count == stitched.document_count
     assert env.stats.page_count == stitched.page_count
     assert env.stats.char_count_markdown == stitched.char_count_markdown
-
-
-def test_public_api_stubs_and_side_effect_boundary_remain_unchanged(tmp_path: Path) -> None:
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_file("example.pdf")
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_url(KENYALAW_URL)
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_source(_source_mapping())
-
-    assert list(tmp_path.iterdir()) == []
 
 
 def test_input_dataclass_is_frozen() -> None:

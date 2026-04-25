@@ -4,7 +4,6 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-import gazette_mistral_pipeline as gmp
 from gazette_mistral_pipeline.notice_parsing import (
     PENDING_CONFIDENCE_REASON,
     ParsedMarkdownResult,
@@ -296,15 +295,6 @@ def test_representative_kenya_gazette_snippet() -> None:
             "Cabinet Secretary."
         )
     ).notices[0].content_sha256
-
-
-def test_public_parse_api_remains_unwired() -> None:
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_file("example.pdf")
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_url("https://example.com/source.pdf")
-    with pytest.raises(NotImplementedError, match="F10 after F04-F09"):
-        gmp.parse_source("example.pdf")
 
 
 def test_invalid_argument_types_fail_clearly() -> None:

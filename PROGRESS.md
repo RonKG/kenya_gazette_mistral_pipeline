@@ -18,10 +18,10 @@ Session-start prompt:
 
 ## Today
 
-**Current:** F10 - Public API and bundle writer  
-**What:** Expose parse/write functions and write output bundles over the completed F04-F09 stages.  
-**Where:** Package root API and bundle writer module to be specified  
-**Previous:** F09 ✅ - Build validated envelope implemented and tested.
+**Current:** F12 - Installable package smoke test  
+**What:** Verify install, imports, schema package data, and git-install readiness.  
+**Where:** Fresh virtual environment/install smoke coverage to be specified  
+**Previous:** F11 ✅ - JSON Schema export implemented and tested.
 
 ## Work Items
 
@@ -36,20 +36,20 @@ Session-start prompt:
 | F07 | Notice and table parsing | Parse joined markdown into notices, dates, tables, and corrigenda placeholders | ✅ Complete | 029c572 |
 | F08 | Confidence and spatial hints | Score notices and summarize optional Mistral coordinate metadata | ✅ Complete | 3f37408 |
 | F09 | Build validated envelope | Assemble and validate the enhanced Pydantic envelope | ✅ Complete | 4fe6eae |
-| F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ⬜ Next | - |
-| F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ⬜ Not started | - |
-| F12 | Installable package smoke test | Verify install, imports, schema package data, and git-install readiness | ⬜ Not started | - |
+| F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ✅ Complete | - |
+| F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ✅ Complete | - |
+| F12 | Installable package smoke test | Verify install, imports, schema package data, and git-install readiness | ⬜ Next | - |
 | F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ⬜ Not started | - |
 
 ## Quality Gates
 
 | Gate | Condition | Status |
 |------|-----------|--------|
-| Gate 0 | Package processes one PDF source through mocked or replayed Mistral and writes default bundles | ⬜ Not reached |
+| Gate 0 | Package processes one PDF source through mocked or replayed Mistral and writes default bundles | ✅ Reached - F10 replay public parse and default bundle writer tests pass offline |
 | Gate 1 | Regression checks pass on selected cached Mistral OCR JSON fixtures from `prototype_outputs` | 🟨 Partial - F06 representative block-list raw JSON fixture passes; F07 representative inline notice/table/corrigenda snippets pass; F08 inline confidence/layout scoring snippets pass; broader cached-response regression waits for envelope stages |
 | Gate 2 | Re-running the same cached response produces deterministic source IDs, run IDs, and notice IDs | 🟨 Partial - F07 deterministic notice IDs and content hashes pass on inline joined-markdown fixtures; F08 deterministic confidence scores pass on inline fixtures; cached-response rerun waits for later envelope stages |
-| Gate 3 | `from gazette_mistral_pipeline import parse_file, write_envelope` works after install | 🟨 Partial - F02 import smoke and F03 model root exports passed; callable implementation waits for F10 |
-| Gate 4 | Envelope validates against its JSON Schema | 🟨 Partial - F09 validates the assembled Pydantic `Envelope`; full JSON Schema export and validation wait for F11 |
+| Gate 3 | `from gazette_mistral_pipeline import parse_file, write_envelope` works after install | 🟨 Partial - F10 root parse/write callables pass in-repo; fresh install smoke remains F12 |
+| Gate 4 | Envelope validates against its JSON Schema | ✅ Reached - F11 exports deterministic envelope JSON Schema, validates JSON inputs through the canonical `Envelope`, and writes schema bundles offline |
 | Gate 5 | Fresh virtual environment install works as proxy for `pip install git+...` | ⬜ Not reached |
 
 ## Known Debt And Gotchas
@@ -61,7 +61,7 @@ Session-start prompt:
 | D3 | Mistral API calls must be opt-in in tests | Enduring gotcha | - | Normal test runs could become slow, flaky, or billable |
 | D4 | Mistral response JSON may not contain word-level coordinates | Enduring gotcha | - | Spatial hints can improve provenance but cannot promise full reading-order reconstruction |
 | D5 | API keys must come from environment/config, not checked-in notebooks or fixtures | Enduring gotcha | - | Secret leakage risk |
-| D6 | Live local PDF OCR upload/file-reference support is not implemented yet | Active debt | F10 or later | Local PDF sources work in replay mode, but live local OCR fails until an explicit upload flow is added |
+| D6 | Live local PDF OCR upload/file-reference support is not implemented yet | Active debt | Later approved upload spec | Local PDF sources work in replay mode, but live local OCR fails until an explicit upload flow is added |
 
 ## Reference Docs
 
@@ -79,6 +79,8 @@ Session-start prompt:
 - `specs/F07-notice-and-table-parsing.md` - completed notice and table parsing spec
 - `specs/F08-confidence-and-spatial-hints.md` - completed confidence and spatial hints spec
 - `specs/F09-build-validated-envelope.md` - completed validated envelope builder spec
+- `specs/F10-public-api-and-bundle-writer.md` - completed public API and bundle writer spec
+- `specs/F11-json-schema-export.md` - completed JSON Schema export spec
 
 ## Session Log
 
@@ -93,5 +95,7 @@ Session-start prompt:
 | 2026-04-25 | F07 Notice and table parsing | Added pure joined-markdown notice parsing, table extraction, corrigenda placeholders, deterministic hashes/IDs, provenance, and neutral F08 confidence placeholders. `python -m pytest tests/test_notice_parsing.py` and `python -m pytest` passed. |
 | 2026-04-25 | F08 Confidence and spatial hints | Added deterministic notice confidence scoring, document confidence aggregation, layout hint summaries, and bounded pipeline warnings. `python -m pytest tests/test_confidence_scoring.py` and `python -m pytest` passed. |
 | 2026-04-25 | F09 Build validated envelope | Added pure envelope assembly from F04-F08 outputs, canonical versions/timestamps, count drift checks, single-pass table flattening, Pydantic validation, and F09 tests. `python -m pytest tests/test_envelope_builder.py` and `python -m pytest` passed. |
+| 2026-04-25 | F10 Public API and bundle writer | Wired package-root parse functions through F04-F09, added explicit replay/live/output runtime controls, implemented deterministic bundle writing, kept schema helpers as F11 stubs, and added F10 public API/bundle writer tests. `python -m pytest tests/test_public_api.py tests/test_bundle_writer.py` and `python -m pytest` passed. |
+| 2026-04-25 | F11 JSON Schema export | Added package-root schema export and validation helpers, checked-in deterministic envelope schema package data, schema bundle writing, and F11 tests. `python -m pytest tests/test_schema_export.py tests/test_public_api.py tests/test_bundle_writer.py` and `python -m pytest` passed. |
 
 Add a row here at the end of every session.
