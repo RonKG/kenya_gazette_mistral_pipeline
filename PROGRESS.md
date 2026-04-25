@@ -18,10 +18,10 @@ Session-start prompt:
 
 ## Today
 
-**Current:** F04 - PDF source loading  
-**What:** Support PDF URL, local PDF path, and manifests; derive stable run names.  
-**Where:** `gazette_mistral_pipeline/`, source-loading modules to be specified  
-**Previous:** F03 ✅ - Pydantic models created, exported, and tested.
+**Current:** F05 - Mistral API pass  
+**What:** Send PDF source to Mistral OCR, cache raw OCR JSON, support replay mode.  
+**Where:** Mistral client/API modules to be specified  
+**Previous:** F04 ✅ - PDF source loading implemented and tested.
 
 ## Work Items
 
@@ -30,8 +30,8 @@ Session-start prompt:
 | F01 | Project SOP scaffold | Create progress, docs, specs, agents, and build gates | ✅ Complete | 954b16d |
 | F02 | Package skeleton | Create git-installable Python package with public API stubs | ✅ Complete | 954b16d |
 | F03 | Pydantic models | Define lightweight Mistral envelope, source, notices, tables, confidence, warnings, bundles, and spatial hints | ✅ Complete | 423f69e |
-| F04 | PDF source loading | Support PDF URL, local PDF path, and manifests; derive stable run names | ⬜ Next | - |
-| F05 | Mistral API pass | Send PDF source to Mistral OCR, cache raw OCR JSON, support replay mode | ⬜ Not started | - |
+| F04 | PDF source loading | Support PDF URL, local PDF path, and manifests; derive stable run names | ✅ Complete | - |
+| F05 | Mistral API pass | Send PDF source to Mistral OCR, cache raw OCR JSON, support replay mode | ⬜ Next | - |
 | F06 | Normalize and stitch pages | Normalize Mistral pages and write joined markdown | ⬜ Not started | - |
 | F07 | Notice and table parsing | Parse joined markdown into notices, dates, tables, and corrigenda placeholders | ⬜ Not started | - |
 | F08 | Confidence and spatial hints | Score notices and summarize optional Mistral coordinate metadata | ⬜ Not started | - |
@@ -72,6 +72,7 @@ Session-start prompt:
 - `specs/F01-project-sop-scaffold.md` - completed scaffold spec
 - `specs/F02-package-skeleton.md` - completed package skeleton spec
 - `specs/F03-pydantic-models.md` - completed Pydantic model spec
+- `specs/F04-pdf-source-loading.md` - completed PDF source loading spec
 
 ## Session Log
 
@@ -80,5 +81,6 @@ Session-start prompt:
 | 2026-04-25 | F01 Project SOP scaffold | Created Docling-style project documents, feature list, gates, and agent workflow for the Mistral package. |
 | 2026-04-25 | F02 Package skeleton | Created installable package shell, public API stubs, `pyproject.toml`, README, Apache-2.0 license, and skeleton tests. `python -m pytest tests/test_package_skeleton.py` passed; `python -m pip install -e .` passed. |
 | 2026-04-25 | F03 Pydantic models | Added strict Pydantic model layer, model root exports, config and bundle defaults, optional spatial hints, and model tests. `python -m pytest tests/test_package_skeleton.py tests/test_models.py` passed. |
+| 2026-04-25 | F04 PDF source loading | Added source-loading helpers for PDF URLs, local PDFs, JSON manifests, stable run names, source SHA-256 hashes, and invalid-input checks. `python -m pytest` passed. |
 
 Add a row here at the end of every session.
