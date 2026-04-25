@@ -42,7 +42,7 @@ Session-start prompt:
 | F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ✅ Complete | 69b40d2 |
 | F14 | Live local PDF upload support | Upload local or network PDF paths to Mistral, OCR by `file_id`, and keep `parse_file` live-capable | ✅ Complete | 17ae63d |
 | F15 | Clean page running headers | Strip repeated gazette page title/date/page-number headers from joined markdown before notice parsing | ✅ Complete | 17ae63d |
-| F16 | Exclude post-notice tail | Keep ads/catalogues/subscriber notes in joined markdown but exclude them from parsed notices | ✅ Complete | - |
+| F16 | Exclude post-notice tail | Keep ads/catalogues/subscriber notes in joined markdown but exclude them from parsed notices | ✅ Complete | a3c3317 |
 
 ## Quality Gates
 
