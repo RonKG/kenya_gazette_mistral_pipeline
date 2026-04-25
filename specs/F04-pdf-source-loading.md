@@ -58,7 +58,7 @@ Text manifests from the notebook prototype are not part of the public F04 contra
 | `docs/library-roadmap-v1.md` | Places source loading before Mistral API, page normalization, parsing, and envelope assembly |
 | `docs/known-issues.md` | Requires stable output names, no API keys in source metadata, and no assumptions about local PDF upload behavior |
 | `specs/SOP.md` | Requires spec-first implementation, small feature scope, and tests before progress updates |
-| `gazette_etl_prototype.ipynb` | Contains the existing URL validation, manifest reading, and Kenyalaw AKN run-name extraction behavior to preserve |
+| `examples/historical/gazette_etl_prototype.ipynb` | Contains the existing URL validation, manifest reading, and Kenyalaw AKN run-name extraction behavior to preserve |
 
 ## 4. Test Case Matrix
 

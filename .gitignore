@@ -8,3 +8,4 @@ __pycache__/
 build/
 dist/
 prototype_outputs/
+examples/_live_mistral_pdf_test/

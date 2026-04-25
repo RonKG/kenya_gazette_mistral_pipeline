@@ -68,7 +68,7 @@ The helper names are suggestions; the implementation may choose equivalent names
 | `gazette_mistral_pipeline/page_normalization.py` | Provides `StitchedMarkdownResult.markdown` and deterministic page/document headers used for parser provenance |
 | `gazette_mistral_pipeline/models/notice.py` | Defines `Notice`, `ExtractedTable`, `Corrigendum`, `Provenance`, and `ConfidenceScores` fields F07 must populate |
 | `gazette_mistral_pipeline/models/envelope.py` | Defines `Stats` context; F07 produces notice/table counts for F09 but does not assemble `Stats` or `Envelope` |
-| `gazette_etl_prototype.ipynb` | Provides prototype regexes for `GAZETTE`/`GRZETTE NOTICE NO.`, date extraction, markdown table heuristics, and envelope parsing behavior |
+| `examples/historical/gazette_etl_prototype.ipynb` | Provides prototype regexes for `GAZETTE`/`GRZETTE NOTICE NO.`, date extraction, markdown table heuristics, and envelope parsing behavior |
 | `tests/test_page_normalization.py` | Shows the F06 joined markdown shape, page header format, and offline fixture style F07 tests should follow |
 
 ## 4. Test Case Matrix

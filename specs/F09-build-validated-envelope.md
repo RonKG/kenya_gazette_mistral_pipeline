@@ -65,7 +65,7 @@ Helper names may change if tests document the package-internal contract, but F10
 | `gazette_mistral_pipeline/models/notice.py` | Defines `Notice`, `ExtractedTable`, `Corrigendum`, and confidence/provenance fields included in the envelope |
 | `gazette_mistral_pipeline/models/source.py` | Defines `PdfSource` and `MistralMetadata` fields included in the envelope |
 | `gazette_mistral_pipeline/__version__.py` | Provides canonical `LIBRARY_VERSION` and `SCHEMA_VERSION` constants |
-| `gazette_etl_prototype.ipynb` | Shows the prototype `markdown_to_envelope(...)` behavior, especially the transition from joined markdown to envelope stats, but F09 must replace it with validated package models |
+| `examples/historical/gazette_etl_prototype.ipynb` | Shows the prototype `markdown_to_envelope(...)` behavior, especially the transition from joined markdown to envelope stats, but F09 must replace it with validated package models |
 
 ## 4. Test Case Matrix
 

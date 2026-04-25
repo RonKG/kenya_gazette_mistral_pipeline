@@ -105,7 +105,7 @@ Document headers may appear once per document when `add_document_headers=True`. 
 | `specs/F05-mistral-api-pass.md` | Leaves raw JSON in Mistral's native shape and defines F06 as the consumer of `MistralOcrResult.raw_json` |
 | `gazette_mistral_pipeline/mistral_ocr.py` | Provides `load_raw_mistral_json(...)`, shape validation precedent, and metadata page counting from F05 |
 | `gazette_mistral_pipeline/models/envelope.py` | Defines `Stats`, whose `document_count`, `page_count`, and `char_count_markdown` are seeded by F06 |
-| `gazette_etl_prototype.ipynb` | Provides prototype behavior for `load_mistral_blocks`, page sorting, page metadata, document headers, page headers, and joined markdown writing |
+| `examples/historical/gazette_etl_prototype.ipynb` | Provides prototype behavior for `load_mistral_blocks`, page sorting, page metadata, document headers, page headers, and joined markdown writing |
 
 ## 4. Test Case Matrix
 

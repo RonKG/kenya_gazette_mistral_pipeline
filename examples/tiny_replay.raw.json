@@ -1,10 +1,12 @@
 {
-  "id": "example-notebook-replay",
+  "id": "tiny_replay",
   "model": "mistral-ocr-latest",
   "pages": [
     {
       "index": 0,
-      "markdown": "## GAZETTE NOTICE NO. 5969\n\nTHE LAND REGISTRATION ACT\n\nIN EXERCISE of the powers conferred by law, the Registrar gives notice.\n\n| Parcel | Owner |\n| --- | --- |\n| Kajiado/1 | Jane Doe |\n\nDated the 17th April, 2026.\n\nREGISTRAR,\nLands Registry."
+      "markdown": "## GAZETTE NOTICE NO. 1\n\nTHE LAND REGISTRATION ACT\n\nNotice is given by the Registrar.\n\n| Parcel | Owner |\n| --- | --- |\n| Nairobi/1 | Jane Doe |\n\nDated the 1st January, 2024.\n\nREGISTRAR,\nLands Registry.",
+      "dimensions": {"width": 595, "height": 842},
+      "images": []
     }
   ]
 }

@@ -115,7 +115,7 @@ The implementation may add Mistral OCR options only when they are stored as non-
 | `docs/known-issues.md` | Requires env/config API keys, opt-in live calls, explicit local upload handling, and support for known raw JSON shapes |
 | `specs/SOP.md` | Requires spec-first implementation, lightweight dependencies, mocked/replayed Mistral tests, and pass/fail criteria |
 | `specs/F04-pdf-source-loading.md` | Provides resolved `PdfSource` objects, stable run names, and local path/URL classification for F05 |
-| `gazette_etl_prototype.ipynb` | Provides the current OCR request body, stdlib HTTP approach, raw JSON cache file naming, and replay/raw JSON behavior |
+| `examples/historical/gazette_etl_prototype.ipynb` | Provides the current OCR request body, stdlib HTTP approach, raw JSON cache file naming, and replay/raw JSON behavior |
 
 ## 4. Test Case Matrix
 

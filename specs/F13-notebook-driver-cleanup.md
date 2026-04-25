@@ -9,7 +9,7 @@ Convert notebook usage into thin, offline-first examples over the package public
 | Aspect | Specification |
 |--------|---------------|
 | Feature scope | Add a thin notebook driver that imports and demonstrates the package public API; clean or replace notebook documentation so routine examples use `parse_url`, `parse_file`, `write_envelope`, `GazetteConfig`, and `Bundles`; add lightweight offline notebook hygiene checks |
-| Notebook strategy | Preserve `gazette_etl_prototype.ipynb` as historical prototype context only if it is not the recommended user entry point; add a new thin example notebook, likely `examples/gazette_package_driver.ipynb`, and make README/docs point users to that driver. If the builder decides the root prototype notebook must remain the main entry point, rewrite it directly into the same thin-driver shape instead of carrying duplicated prototype code forward |
+| Notebook strategy | Preserve `examples/historical/gazette_etl_prototype.ipynb` as historical prototype context only if it is not the recommended user entry point; add a new thin example notebook, likely `examples/gazette_package_driver.ipynb`, and make README/docs point users to that driver. If the builder decides the root prototype notebook must remain the main entry point, rewrite it directly into the same thin-driver shape instead of carrying duplicated prototype code forward |
 | Historical prototype handling | Do not depend on the historical prototype for tests. If retained, it should be clearly labeled historical/prototype and should have outputs cleared or tightly bounded. It must not contain hardcoded secrets or live API-key values |
 | Public API used by notebook | Import from `gazette_mistral_pipeline`: `parse_url`, `parse_file`, `write_envelope`, `GazetteConfig`, `Bundles`, and optionally `get_envelope_schema` or `validate_envelope_json` for a small demonstration |
 | Default execution mode | Replay/offline mode is the default. The notebook should create or reference a tiny replay fixture or documented user-provided replay JSON path, configure `GazetteConfig(runtime={"replay_raw_json_path": ..., "output_dir": ...})`, and avoid network access by default |
@@ -33,7 +33,7 @@ tests/
   test_notebook_examples.py
 ```
 
-The exact notebook path may differ if the builder chooses to rewrite `gazette_etl_prototype.ipynb` directly, but the final repository should have one clearly recommended thin notebook driver over the package API.
+The exact notebook path may differ if the builder chooses to rewrite `examples/historical/gazette_etl_prototype.ipynb` directly, but the final repository should have one clearly recommended thin notebook driver over the package API.
 
 ## 3. Links To Canonical Docs
 
@@ -48,7 +48,7 @@ The exact notebook path may differ if the builder chooses to rewrite `gazette_et
 | `specs/F11-json-schema-export.md` | Defines schema helper behavior that may be demonstrated without changing schema code |
 | `specs/F12-installable-package-smoke-test.md` | Confirms installed package readiness, root imports, and offline replay smoke behavior that the notebook can mirror |
 | `README.md` | Contains public install and API examples that may need a narrow notebook usage update |
-| `gazette_etl_prototype.ipynb` | Current historical prototype with embedded pipeline code and stale/large outputs that F13 should retire from the recommended flow |
+| `examples/historical/gazette_etl_prototype.ipynb` | Current historical prototype with embedded pipeline code and stale/large outputs that F13 should retire from the recommended flow |
 | `gazette_mistral_pipeline/__init__.py` | Defines package-root exports the notebook should import |
 | `gazette_mistral_pipeline/public_api.py` | Defines replay/live parse behavior and the supported public driver surface |
 | `gazette_mistral_pipeline/bundle_writer.py` | Defines deterministic bundle writing the notebook should demonstrate |
@@ -67,7 +67,7 @@ The exact notebook path may differ if the builder chooses to rewrite `gazette_et
 | TC5 | Notebook outputs are cleared or bounded | Notebook JSON inspected for output counts and serialized output size | Cells have no outputs or only tiny demonstration outputs under a documented byte/line threshold; no full raw OCR JSON, full joined markdown, full envelope, huge tables, or stale absolute-path output is checked in |
 | TC6 | Bundle writing demonstration stays package-level | Thin notebook source inspected | Example calls `write_envelope(...)` with `Bundles` or a bundle dict and writes to a controlled example/temp output path; it does not manually serialize envelope, joined markdown, raw OCR JSON, schema, notices, tables, index, or trace bundles |
 | TC7 | README/docs point to the thin driver if needed | `README.md` or a narrow docs update reviewed | Public docs no longer direct users to the historical embedded-logic prototype as the main path; they describe replay/offline default behavior and explicit live mode boundaries without secrets |
-| TC8 | Historical prototype is safe if retained | `gazette_etl_prototype.ipynb` inspected when retained | It is labeled historical or not referenced as the current example, contains no secrets, and either has outputs cleared/bounded or is replaced by the thin driver content |
+| TC8 | Historical prototype is safe if retained | `examples/historical/gazette_etl_prototype.ipynb` inspected when retained | It is labeled historical or not referenced as the current example, contains no secrets, and either has outputs cleared/bounded or is replaced by the thin driver content |
 | TC9 | Normal tests remain offline and lightweight | `python -m pytest tests/test_notebook_examples.py` and `python -m pytest` | Tests pass without API keys, network access, live Mistral calls, notebook execution, `.env`, or historical `prototype_outputs`; they use only stdlib JSON inspection and existing package/dev tooling |
 | TC10 | Existing package behavior is unchanged | Existing F10-F12 tests run | `tests/test_public_api.py`, `tests/test_bundle_writer.py`, `tests/test_install_smoke.py`, and the full offline suite continue passing, with no parser, schema, writer, smoke, or runtime dependency changes |
 
@@ -109,7 +109,7 @@ Normal F13 tests must be offline. They should inspect notebook files as JSON and
 | Live mode is explicit only | Any live OCR example is commented or gated with `allow_live_mistral=True`, explicit output dir, and environment-only API key access |
 | Secrets boundary holds | Notebook source, metadata, and outputs contain no hardcoded API keys, bearer tokens, `.env` reads, or secret-bearing fixture data |
 | Output churn is controlled | Checked-in notebook outputs are cleared or bounded and contain no huge/stale raw OCR, joined markdown, or envelope dumps |
-| Historical prototype is not the main driver | If `gazette_etl_prototype.ipynb` is retained, docs label it historical or stop pointing to it as the primary example; otherwise it is rewritten into the thin-driver shape |
+| Historical prototype is not the main driver | If `examples/historical/gazette_etl_prototype.ipynb` is retained, docs label it historical or stop pointing to it as the primary example; otherwise it is rewritten into the thin-driver shape |
 | Docs remain accurate | README or narrow docs update points users to replay/offline notebook usage and explicit live mode policy if notebook guidance changes |
 | Runtime dependencies stay lightweight | Review confirms no runtime dependencies are added; any notebook tooling remains dev/example-only and existing |
 | Existing package contracts remain unchanged | F10-F12 public API, bundle writer, schema export, and install smoke tests continue to pass |
@@ -119,7 +119,7 @@ Normal F13 tests must be offline. They should inspect notebook files as JSON and
 
 - [x] `specs/F13-notebook-driver-cleanup.md` is approved before implementation starts.
 - [x] One clearly recommended thin notebook driver exists and demonstrates package-root parsing and bundle writing through `parse_url` or `parse_file`, `write_envelope`, `GazetteConfig`, and `Bundles`.
-- [x] `gazette_etl_prototype.ipynb` is either rewritten into that thin-driver shape or preserved only as labeled historical prototype context outside the recommended user path.
+- [x] `examples/historical/gazette_etl_prototype.ipynb` is either rewritten into that thin-driver shape or preserved only as labeled historical prototype context outside the recommended user path.
 - [x] Notebook default configuration is replay/offline and does not require `MISTRAL_API_KEY`, network access, `.env`, live Mistral calls, or historical `prototype_outputs`.
 - [x] Any live OCR path is explicit, opt-in, environment-only for API keys, and not executed by normal tests.
 - [x] Checked-in notebook outputs are cleared or bounded to tiny demonstration output with no huge/stale artifacts.
@@ -132,7 +132,7 @@ Normal F13 tests must be offline. They should inspect notebook files as JSON and
 
 ## 8. Open Questions And Risks
 
-Q1. Should F13 edit `gazette_etl_prototype.ipynb` directly, add a new examples notebook, or both?
+Q1. Should F13 edit `examples/historical/gazette_etl_prototype.ipynb` directly, add a new examples notebook, or both?
 
 Recommended answer: add a new thin driver notebook under `examples/` and preserve the existing root prototype only as historical context if it remains useful. This avoids rewriting a large exploratory artifact while giving users a clean current entry point. If having two notebooks is confusing, replace the root prototype with the thin driver and move any historical explanation into markdown prose.
 

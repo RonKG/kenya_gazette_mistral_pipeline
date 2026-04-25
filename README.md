@@ -67,8 +67,9 @@ It imports package-root APIs and defaults to offline replay with the tiny
 `examples/tiny_replay.raw.json` fixture, so it does not require `MISTRAL_API_KEY`,
 network access, `.env`, live Mistral calls, or historical `prototype_outputs`.
 
-The root `gazette_etl_prototype.ipynb` is historical prototype context only and
-is not the current user entry point.
+Historical notebooks `examples/historical/gazette_etl_prototype.ipynb` and
+`examples/historical/gazette_iteration_pipeline.ipynb` are prototype context only
+and are not the current user entry point.
 
 ## Runtime Dependencies
 
