@@ -31,7 +31,7 @@ Session-start prompt:
 | F02 | Package skeleton | Create git-installable Python package with public API stubs | ✅ Complete | 954b16d |
 | F03 | Pydantic models | Define lightweight Mistral envelope, source, notices, tables, confidence, warnings, bundles, and spatial hints | ✅ Complete | 423f69e |
 | F04 | PDF source loading | Support PDF URL, local PDF path, and manifests; derive stable run names | ✅ Complete | 164da54 |
-| F05 | Mistral API pass | Send PDF source to Mistral OCR, cache raw OCR JSON, support replay mode | ✅ Complete | - |
+| F05 | Mistral API pass | Send PDF source to Mistral OCR, cache raw OCR JSON, support replay mode | ✅ Complete | 8f791db |
 | F06 | Normalize and stitch pages | Normalize Mistral pages and write joined markdown | ⬜ Next | - |
 | F07 | Notice and table parsing | Parse joined markdown into notices, dates, tables, and corrigenda placeholders | ⬜ Not started | - |
 | F08 | Confidence and spatial hints | Score notices and summarize optional Mistral coordinate metadata | ⬜ Not started | - |
