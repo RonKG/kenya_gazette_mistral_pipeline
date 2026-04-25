@@ -10,10 +10,9 @@ PDF source -> Mistral OCR API -> raw OCR JSON -> joined markdown -> enhanced JSO
 
 ## Status
 
-This repository is in early package scaffolding. F02 provides an installable
-package shell and public API stubs. The real Mistral API pass, parsing, models,
-schema validation, and bundle writing land in later features tracked in
-`PROGRESS.md`.
+This repository is an early lightweight package. It exposes replay-capable
+public parse functions, deterministic bundle writing, and JSON Schema helpers;
+remaining work is tracked in `PROGRESS.md`.
 
 ## Installation
 
@@ -29,7 +28,17 @@ Future Git install:
 pip install "git+https://github.com/<owner>/gazette-mistral-pipeline.git"
 ```
 
-## Planned API
+Install smoke from a local checkout:
+
+```shell
+python scripts/install_smoke.py --repo-path . --mode local-path
+```
+
+The smoke runs from a temporary working directory outside the repository and
+uses replay fixtures, so it does not require `MISTRAL_API_KEY` or live Mistral
+network calls.
+
+## Public API
 
 ```python
 from gazette_mistral_pipeline import parse_file, parse_url, write_envelope
@@ -38,12 +47,13 @@ env = parse_url("https://example.com/source.pdf")
 written = write_envelope(env, "prototype_outputs/example")
 ```
 
-In F02 these functions intentionally raise `NotImplementedError`.
-
 ## Runtime Dependencies
 
-F02 has no runtime dependencies. Later features will add only the small
-dependencies needed for validated envelopes and schema checks.
+Runtime dependencies are intentionally small:
+
+```text
+pydantic>=2.0
+```
 
 ## License
 

@@ -51,3 +51,6 @@ gazette_mistral_pipeline = ["py.typed", "schemas/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "smoke: fresh virtual environment install smoke tests that are opt-in by default",
+]

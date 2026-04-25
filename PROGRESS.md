@@ -18,10 +18,10 @@ Session-start prompt:
 
 ## Today
 
-**Current:** F12 - Installable package smoke test  
-**What:** Verify install, imports, schema package data, and git-install readiness.  
-**Where:** Fresh virtual environment/install smoke coverage to be specified  
-**Previous:** F11 ✅ - JSON Schema export implemented and tested.
+**Current:** F13 - Notebook driver cleanup  
+**What:** Convert notebooks into thin examples over the package API.  
+**Where:** Notebook/example cleanup to be specified  
+**Previous:** F12 ✅ - Installable package smoke test implemented and tested.
 
 ## Work Items
 
@@ -38,8 +38,8 @@ Session-start prompt:
 | F09 | Build validated envelope | Assemble and validate the enhanced Pydantic envelope | ✅ Complete | 4fe6eae |
 | F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ✅ Complete | 53fcd0b |
 | F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ✅ Complete | 53fcd0b |
-| F12 | Installable package smoke test | Verify install, imports, schema package data, and git-install readiness | ⬜ Next | - |
-| F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ⬜ Not started | - |
+| F12 | Installable package smoke test | Verify install, imports, schema package data, and git-install readiness | ✅ Complete | - |
+| F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ⬜ Next | - |
 
 ## Quality Gates
 
@@ -48,9 +48,9 @@ Session-start prompt:
 | Gate 0 | Package processes one PDF source through mocked or replayed Mistral and writes default bundles | ✅ Reached - F10 replay public parse and default bundle writer tests pass offline |
 | Gate 1 | Regression checks pass on selected cached Mistral OCR JSON fixtures from `prototype_outputs` | 🟨 Partial - F06 representative block-list raw JSON fixture passes; F07 representative inline notice/table/corrigenda snippets pass; F08 inline confidence/layout scoring snippets pass; broader cached-response regression waits for envelope stages |
 | Gate 2 | Re-running the same cached response produces deterministic source IDs, run IDs, and notice IDs | 🟨 Partial - F07 deterministic notice IDs and content hashes pass on inline joined-markdown fixtures; F08 deterministic confidence scores pass on inline fixtures; cached-response rerun waits for later envelope stages |
-| Gate 3 | `from gazette_mistral_pipeline import parse_file, write_envelope` works after install | 🟨 Partial - F10 root parse/write callables pass in-repo; fresh install smoke remains F12 |
+| Gate 3 | `from gazette_mistral_pipeline import parse_file, write_envelope` works after install | ✅ Reached - F12 local fresh-venv install smoke verifies root parse/write/schema imports after install |
 | Gate 4 | Envelope validates against its JSON Schema | ✅ Reached - F11 exports deterministic envelope JSON Schema, validates JSON inputs through the canonical `Envelope`, and writes schema bundles offline |
-| Gate 5 | Fresh virtual environment install works as proxy for `pip install git+...` | ⬜ Not reached |
+| Gate 5 | Fresh virtual environment install works as proxy for `pip install git+...` | ✅ Reached - F12 standalone local-path install smoke passes offline and optional Git URL smoke is explicit only |
 
 ## Known Debt And Gotchas
 
@@ -81,6 +81,7 @@ Session-start prompt:
 - `specs/F09-build-validated-envelope.md` - completed validated envelope builder spec
 - `specs/F10-public-api-and-bundle-writer.md` - completed public API and bundle writer spec
 - `specs/F11-json-schema-export.md` - completed JSON Schema export spec
+- `specs/F12-installable-package-smoke-test.md` - completed installable package smoke test spec
 
 ## Session Log
 
@@ -97,5 +98,6 @@ Session-start prompt:
 | 2026-04-25 | F09 Build validated envelope | Added pure envelope assembly from F04-F08 outputs, canonical versions/timestamps, count drift checks, single-pass table flattening, Pydantic validation, and F09 tests. `python -m pytest tests/test_envelope_builder.py` and `python -m pytest` passed. |
 | 2026-04-25 | F10 Public API and bundle writer | Wired package-root parse functions through F04-F09, added explicit replay/live/output runtime controls, implemented deterministic bundle writing, kept schema helpers as F11 stubs, and added F10 public API/bundle writer tests. `python -m pytest tests/test_public_api.py tests/test_bundle_writer.py` and `python -m pytest` passed. |
 | 2026-04-25 | F11 JSON Schema export | Added package-root schema export and validation helpers, checked-in deterministic envelope schema package data, schema bundle writing, and F11 tests. `python -m pytest tests/test_schema_export.py tests/test_public_api.py tests/test_bundle_writer.py` and `python -m pytest` passed. |
+| 2026-04-25 | F12 Installable package smoke test | Added a standalone fresh-venv local install smoke with wheel content inspection, installed-package import/resource/metadata checks, optional explicit Git URL mode, and offline replay parse/write/schema validation. `python -m pytest tests/test_install_smoke.py`, `python scripts/install_smoke.py --repo-path . --mode local-path`, and `python -m pytest` passed. |
 
 Add a row here at the end of every session.
