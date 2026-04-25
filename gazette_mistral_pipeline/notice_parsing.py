@@ -15,7 +15,7 @@ from gazette_mistral_pipeline.models.notice import (
     Provenance,
 )
 
-PARSER_VERSION = "F07"
+PARSER_VERSION = "F16"
 PENDING_CONFIDENCE_REASON = "pending F08 confidence scoring"
 
 _NOTICE_HEADER_RE = re.compile(
@@ -33,11 +33,24 @@ _BODY_MARKER_RE = re.compile(
     r"^(?:IN\s+EXERCISE|WHEREAS|TAKE\s+NOTICE|IT\s+IS\s+NOTIFIED|Dated\b)",
     re.IGNORECASE,
 )
+_PRICE_RE = re.compile(r"\bPrice:\s*KSh\.?", re.IGNORECASE)
+_NOTICE_COMPLETION_RE = re.compile(
+    r"\b(?:Advocates?|Cabinet Secretary|Director|Formerly known as|Governor|"
+    r"Land Registrar|Minister|Registrar)\b",
+    re.IGNORECASE,
+)
+_TAIL_MARKER_HEADINGS = {
+    "ADVERTISEMENT CHARGES",
+    "CATALOGUE OF GOVERNMENT PUBLICATIONS",
+    "NOW ON SALE",
+    "SUBSCRIPTION AND ADVERTISEMENT CHARGES",
+    "SUBSCRIPTION CHARGES",
+}
 
 
 @dataclass(frozen=True)
 class ParsedMarkdownResult:
-    """Package-internal F07 parser output for later envelope assembly."""
+    """Package-internal notice parser output for later envelope assembly."""
 
     notices: tuple[Notice, ...]
     tables: tuple[ExtractedTable, ...]
@@ -104,6 +117,10 @@ def parse_joined_markdown(
 
     for order, header in enumerate(headers, start=1):
         next_start = headers[order].line_index if order < len(headers) else len(lines)
+        if order == len(headers):
+            tail_start = _post_notice_tail_start(lines, last_notice_start=header.line_index)
+            if tail_start is not None:
+                next_start = tail_start
         start, end = _trim_line_span(lines, header.line_index, next_start)
         raw_markdown = "\n".join(lines[start:end])
         content_sha256 = _sha256(raw_markdown)
@@ -269,6 +286,74 @@ def _trim_line_span(lines: list[str], start: int, stop: int) -> tuple[int, int]:
     while stop > start and not lines[stop - 1].strip():
         stop -= 1
     return start, stop
+
+
+def _post_notice_tail_start(lines: list[str], *, last_notice_start: int) -> int | None:
+    for boundary_start in _page_boundary_starts_after(lines, last_notice_start):
+        candidate_tail = lines[boundary_start:]
+        if _tail_has_evidence(candidate_tail) and not _iter_notice_headers(candidate_tail):
+            return boundary_start
+
+    return _same_page_tail_start(lines, last_notice_start=last_notice_start)
+
+
+def _page_boundary_starts_after(lines: list[str], start: int) -> tuple[int, ...]:
+    starts: list[int] = []
+    for line_index in range(start + 1, len(lines)):
+        if lines[line_index].strip() != "---":
+            continue
+
+        next_content = _next_non_empty_line_index(lines, line_index + 1)
+        if next_content is not None and _PAGE_HEADER_RE.match(lines[next_content]):
+            starts.append(line_index)
+    return tuple(starts)
+
+
+def _same_page_tail_start(lines: list[str], *, last_notice_start: int) -> int | None:
+    for line_index in range(last_notice_start + 1, len(lines)):
+        marker_kind = _tail_marker_kind(lines[line_index])
+        if marker_kind is None or marker_kind == "government_printer":
+            continue
+        if _notice_body_looks_complete(lines[last_notice_start:line_index]):
+            return line_index
+    return None
+
+
+def _tail_has_evidence(lines: list[str]) -> bool:
+    marker_count = sum(1 for line in lines if _tail_marker_kind(line) is not None)
+    price_count = sum(1 for line in lines if _PRICE_RE.search(line))
+
+    return marker_count > 0 or price_count >= 3
+
+
+def _tail_marker_kind(line: str) -> str | None:
+    text = _strip_markdown_inline(line).strip()
+    normalized = re.sub(r"\s+", " ", text).strip(" .:-").upper()
+    if not normalized:
+        return None
+    if normalized in _TAIL_MARKER_HEADINGS:
+        return "heading"
+    if normalized.startswith("IMPORTANT NOTICE TO SUBSCRIBERS"):
+        return "subscriber_notice"
+    if normalized == "GOVERNMENT PRINTER":
+        return "government_printer"
+    return None
+
+
+def _notice_body_looks_complete(lines: list[str]) -> bool:
+    body = "\n".join(lines)
+    non_empty_count = sum(1 for line in lines if line.strip())
+    return non_empty_count >= 3 and (
+        bool(_DATE_RE.search(body))
+        or bool(_NOTICE_COMPLETION_RE.search(body))
+    )
+
+
+def _next_non_empty_line_index(lines: list[str], start: int) -> int | None:
+    for line_index in range(start, len(lines)):
+        if lines[line_index].strip():
+            return line_index
+    return None
 
 
 def _provenance(

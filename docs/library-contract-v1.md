@@ -151,6 +151,13 @@ Each notice should include:
 - `provenance`
 
 `notice_id` must be deterministic for the same source and same Mistral response.
+Notice `other_attributes` may include parser diagnostics such as the
+`parser_version` marker used to trace boundary-rule changes.
+
+For gazettes with catalogue, subscriber, or advertisement material after the
+last official notice, `raw_markdown`, `text`, `tables`, and `provenance` for the
+final `Notice` describe only the detected notice span. The full post-notice
+material remains in the joined markdown bundle.
 
 ## Bundle Contract
 

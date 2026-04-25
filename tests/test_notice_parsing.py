@@ -263,7 +263,150 @@ def test_notice_model_completeness_and_neutral_confidence() -> None:
     assert notice.confidence_scores.composite == 0.5
     assert notice.confidence_scores.band == "medium"
     assert notice.confidence_reasons == [PENDING_CONFIDENCE_REASON]
-    assert notice.other_attributes["parser_version"] == "F07"
+    assert result.parser_version == "F16"
+    assert notice.other_attributes["parser_version"] == "F16"
+
+
+def test_final_notice_excludes_sales_tail_at_page_boundary() -> None:
+    markdown = (
+        "---\n\n"
+        "# Document: doc_1\n\n"
+        "---\n\n"
+        "## Index 0\n\n"
+        "GAZETTE NOTICE NO. 8000\n"
+        "CHANGE OF NAME\n\n"
+        "NOTICE is given that Jane Doe has changed her name.\n\n"
+        "Dated the 1st January, 2026.\n\n"
+        "DOE & COMPANY,\n"
+        "Advocates.\n\n"
+        "---\n\n"
+        "## Index 1\n\n"
+        "# NOW ON SALE\n\n"
+        "CATALOGUE OF GOVERNMENT PUBLICATIONS\n\n"
+        "Price: KSh. 200\n"
+    )
+
+    result = parse_joined_markdown(markdown)
+    notice = result.notices[0]
+
+    assert result.notice_count == 1
+    assert "DOE & COMPANY" in notice.raw_markdown
+    assert "NOW ON SALE" not in notice.raw_markdown
+    assert "CATALOGUE OF GOVERNMENT PUBLICATIONS" not in notice.text
+    assert notice.provenance.stitched_from == ["page:0"]
+    assert notice.provenance.page_span == (0, 0)
+    assert notice.table_count == 0
+    assert "# NOW ON SALE" in markdown
+
+
+def test_final_notice_excludes_subscriber_tail_at_page_boundary() -> None:
+    markdown = (
+        "---\n\n"
+        "# Document: doc_1\n\n"
+        "---\n\n"
+        "## Index 0\n\n"
+        "GAZETTE NOTICE NO. 8001\n"
+        "THE LAND REGISTRATION ACT\n\n"
+        "WHEREAS the certificate of title has been lost.\n\n"
+        "Dated the 2nd January, 2026.\n\n"
+        "A. REGISTRAR,\n"
+        "Land Registrar.\n\n"
+        "---\n\n"
+        "## Index 1\n\n"
+        "# IMPORTANT NOTICE TO SUBSCRIBERS TO THE KENYA GAZETTE\n\n"
+        "## SUBSCRIPTION AND ADVERTISEMENT CHARGES\n\n"
+        "Government Printer.\n"
+    )
+
+    notice = parse_joined_markdown(markdown).notices[0]
+
+    assert "Land Registrar" in notice.text
+    assert "IMPORTANT NOTICE TO SUBSCRIBERS" not in notice.raw_markdown
+    assert "SUBSCRIPTION AND ADVERTISEMENT CHARGES" not in notice.text
+
+
+def test_final_change_of_name_notice_is_preserved() -> None:
+    result = parse_joined_markdown(
+        _joined_notice(
+            "GAZETTE NOTICE NO. 8002\n"
+            "CHANGE OF NAME\n\n"
+            "NOTICE is given that by a deed poll, Jane Doe formerly known as Jane Roe "
+            "has changed her name.\n\n"
+            "Dated the 3rd January, 2026.\n\n"
+            "JANE DOE,\n"
+            "Formerly known as Jane Roe."
+        )
+    )
+
+    notice = result.notices[0]
+
+    assert notice.title_lines == ["CHANGE OF NAME"]
+    assert "Formerly known as Jane Roe" in notice.text
+    assert notice.raw_markdown.endswith("Formerly known as Jane Roe.")
+
+
+def test_commercial_looking_official_notice_text_is_preserved() -> None:
+    result = parse_joined_markdown(
+        _joined_notice(
+            "GAZETTE NOTICE NO. 8003\n"
+            "THE TRANSFER OF BUSINESS ACT\n\n"
+            "TAKE NOTICE that the transfer includes advertisement charges and other costs.\n\n"
+            "Dated the 4th January, 2026.\n\n"
+            "A. DIRECTOR,\n"
+            "Director."
+        )
+    )
+
+    assert "advertisement charges and other costs" in result.notices[0].text
+
+
+def test_body_mentioning_government_printer_is_preserved() -> None:
+    result = parse_joined_markdown(
+        _joined_notice(
+            "GAZETTE NOTICE NO. 8006\n"
+            "THE PUBLICATIONS ACT\n\n"
+            "Dated the 6th January, 2026.\n\n"
+            "Copies are available from the Government Printer.\n\n"
+            "Government Printer."
+        )
+    )
+
+    notice = result.notices[0]
+
+    assert "Copies are available from the Government Printer." in notice.text
+    assert notice.raw_markdown.endswith("Government Printer.")
+
+
+def test_same_page_tail_marker_is_cut_only_after_completed_notice_body() -> None:
+    markdown = _joined_notice(
+        "GAZETTE NOTICE NO. 8004\n"
+        "THE COMPLETED NOTICE\n\n"
+        "Dated the 5th January, 2026.\n\n"
+        "A. REGISTRAR,\n"
+        "Registrar.\n\n"
+        "# NOW ON SALE\n\n"
+        "Price: KSh. 200"
+    )
+
+    notice = parse_joined_markdown(markdown).notices[0]
+
+    assert "Registrar." in notice.raw_markdown
+    assert "NOW ON SALE" not in notice.raw_markdown
+    assert "Price: KSh. 200" not in notice.text
+
+
+def test_ambiguous_same_page_tail_marker_is_preserved() -> None:
+    markdown = _joined_notice(
+        "GAZETTE NOTICE NO. 8005\n"
+        "THE INCOMPLETE NOTICE\n\n"
+        "# NOW ON SALE\n\n"
+        "Price: KSh. 200"
+    )
+
+    notice = parse_joined_markdown(markdown).notices[0]
+
+    assert "NOW ON SALE" in notice.raw_markdown
+    assert "Price: KSh. 200" in notice.text
 
 
 def test_representative_kenya_gazette_snippet() -> None:

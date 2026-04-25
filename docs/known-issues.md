@@ -54,6 +54,8 @@ The parser is markdown and regex based. It can miss or merge notices when OCR ou
 
 Confidence scores and trace bundles should make these cases visible.
 
+The parser excludes detected post-notice catalogue, subscriber, and advertisement tail material from the final parsed notice while preserving it in joined markdown. This is heuristic and currently limited to strong observed markers such as `NOW ON SALE`, subscriber notices, advertisement-charge headings, Government Printer boilerplate, and repeated `Price: KSh.` catalogue patterns. Same-page cuts intentionally ignore a standalone `Government Printer` line unless stronger tail evidence is present, to avoid truncating official notice text.
+
 ## Page Running Header Cleanup
 
 Joined markdown strips recognizable standalone Kenya Gazette running header/footer lines at page boundaries before parsing.

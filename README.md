@@ -62,7 +62,9 @@ written = write_envelope(
 
 The raw Mistral JSON remains the audit artifact. The joined markdown bundle is
 the normalized parsing artifact and strips recognizable Kenya Gazette running
-headers/footers at page boundaries before notice parsing.
+headers/footers at page boundaries before notice parsing. The parser also keeps
+post-notice catalogue/subscriber material in joined markdown while excluding it
+from the final parsed notice when conservative tail markers are present.
 
 Live Mistral runs are opt-in and require an explicit output directory:
 

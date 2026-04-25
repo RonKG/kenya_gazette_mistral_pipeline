@@ -79,6 +79,31 @@ def test_f15_2009_running_headers_are_excluded_from_joined_markdown_and_notice_t
     assert "THE KENYA GAZETTE 3509" not in notice_13175.text
 
 
+def test_f16_2009_post_notice_tail_is_excluded_from_final_notice(tmp_path: Path) -> None:
+    """F16: catalogue and subscriber tail pages stay out of the final notice."""
+
+    spec = next(item for item in FIXTURE_SPECS if item["run_name"] == "gazette_2009-12-11_103")
+    raw_before = spec["raw_json"].read_bytes()
+    stage_dir = tmp_path / "stage"
+
+    env = gmp.parse_url(spec["url"], config=_replay_config(spec, stage_dir))
+    joined_markdown = (stage_dir / f"{spec['run_name']}_joined.md").read_text(encoding="utf-8")
+
+    assert spec["raw_json"].read_bytes() == raw_before
+    assert "NATIONAL DEVELOPMENT PLAN 2002-2008" in joined_markdown
+    assert "NOW ON SALE" in joined_markdown
+    assert "SUBSCRIPTION AND ADVERTISEMENT CHARGES" in joined_markdown
+
+    final_notice = env.notices[-1]
+    assert final_notice.notice_no == "13493"
+    assert "MOSI &amp; COMPANY" in final_notice.raw_markdown
+    assert "formerly known as Hellen Lily Namvua Mbelle" in final_notice.text
+    assert "NATIONAL DEVELOPMENT PLAN 2002-2008" not in final_notice.raw_markdown
+    assert "NOW ON SALE" not in final_notice.text
+    assert "SUBSCRIPTION AND ADVERTISEMENT CHARGES" not in final_notice.text
+    assert final_notice.other_attributes["parser_version"] == "F16"
+
+
 @pytest.mark.parametrize("spec", FIXTURE_SPECS, ids=[s["run_name"] for s in FIXTURE_SPECS])
 def test_gate1_cached_fixture_processes_and_validates(
     spec: dict,

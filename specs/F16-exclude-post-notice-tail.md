@@ -14,6 +14,7 @@ Keep non-official post-notice material in joined markdown, but exclude it from p
 | Joined markdown behavior | Preserve full joined markdown unchanged, including advertisements and subscription pages |
 | Raw cache behavior | Do not mutate `.raw.json` |
 | Parser behavior | Only exclude tail material from notices; do not delete actual `GAZETTE NOTICE NO...` sections |
+| Error handling | Preserve current `parse_joined_markdown(...)` behavior: non-string markdown raises `TypeError`, blank markdown returns an empty `ParsedMarkdownResult` |
 
 ## 3. Links To Canonical Docs
 
@@ -21,6 +22,7 @@ Keep non-official post-notice material in joined markdown, but exclude it from p
 |-----|----------------|
 | `docs/library-contract-v1.md` | Notices are a public bundle output and should contain official notice content |
 | `docs/library-roadmap-v1.md` | F07 notice parsing defines notice boundaries |
+| `docs/data-quality-confidence-scoring.md` | Boundary changes may affect notice hashes, IDs, and confidence diagnostics |
 | `docs/known-issues.md` | Parser limitations should be documented and tested conservatively |
 | `specs/F15-clean-page-running-headers.md` | F15 should run first because page headers can confuse final notice boundary detection |
 | `PROGRESS.md` | Tracks F16 as a planned cleanup feature after F15 |
@@ -77,6 +79,7 @@ Conservative rules:
 - Apply only to content after the last detected `GAZETTE NOTICE NO...` section.
 - Prefer cutting at an F06 page boundary (`---` plus `## Index N`) after the final notice.
 - Cut only when the candidate tail contains strong non-notice markers and no later gazette notice heading.
+- If the boundary is ambiguous, do not cut; preserving possible extra tail text is safer than truncating official notice content.
 - Preserve all tail content in joined markdown.
 - Do not apply this logic to earlier notices unless a later feature explicitly expands the scope.
 
@@ -105,7 +108,7 @@ Avoid treating normal notice content as tail:
 | TC2 | Final notice followed by subscriber notes | Last notice then `IMPORTANT NOTICE TO SUBSCRIBERS` | Subscriber notes excluded |
 | TC3 | Final official notice is `CHANGE OF NAME` | `GAZETTE NOTICE NO...` plus `CHANGE OF NAME` body | Change of name remains a notice |
 | TC4 | Commercial-looking official notice | `GAZETTE NOTICE NO...` plus transfer/business/public comments text | Remains in notice |
-| TC5 | Tail without page boundary | Last notice followed by strong marker without `## Index` | Parser may cut if marker is strong and line position is after notice body |
+| TC5 | Tail without page boundary | Last notice followed by strong marker without `## Index` | Parser cuts only when the marker is strong and appears after a plausible notice body end; otherwise it preserves the text |
 | TC6 | Body mentions Government Printer | Notice text mentions Government Printer but not in post-notice tail context | Body preserved |
 | TC7 | Regression fixture | `tests/fixtures/gazette_2009-12-11_103.raw.json` | Last parsed notice excludes `NOW ON SALE`, subscriber notes, and ad charges |
 | TC8 | Determinism | Same input parsed twice | Notice IDs and hashes are stable |
@@ -116,6 +119,8 @@ Avoid treating normal notice content as tail:
 - Likely location: add a helper that computes `effective_end` for the final notice span before `_trim_line_span(...)`.
 - Candidate helper: `_post_notice_tail_start(lines: list[str], *, last_notice_start: int) -> int | None`.
 - Side effects: Last notice `raw_markdown`, `text`, `content_sha256`, and possibly `notice_id` can change. This is expected for F16.
+- Provenance and tables: final notice `line_span`, `stitched_from`, extracted tables, and hashes should describe the trimmed notice span only.
+- Parser version: bump `PARSER_VERSION` or an equivalent parser marker so serialized notices show that F16 boundary rules were applied.
 - Raw and joined artifacts: unchanged.
 
 ## 8. Pass/Fail Criteria
@@ -126,15 +131,17 @@ Avoid treating normal notice content as tail:
 | Tail material excluded from final notice | Unit and regression tests |
 | Joined markdown remains complete | Tests parse from joined markdown but do not remove source text |
 | No live Mistral calls | Regression uses cached raw JSON only |
+| Parser version reflects boundary change | Notice parser tests assert the F16 parser marker |
 | Full suite remains green | `python -m pytest` |
 
 ## 9. Definition Of Done
 
-- [ ] Implement conservative final-notice tail detection in F07 notice parsing.
-- [ ] Add unit tests for sales, subscriber, and advertisement tails.
-- [ ] Add regression coverage using cached 2009 OCR fixture.
-- [ ] Update docs/progress with changed notice-boundary behavior.
-- [ ] Run the full test suite.
+- [x] Implement conservative final-notice tail detection in notice parsing.
+- [x] Add unit tests for sales, subscriber, and advertisement tails.
+- [x] Add regression coverage using cached 2009 OCR fixture.
+- [x] Update docs/progress with changed notice-boundary behavior and close D8.
+- [x] Update `docs/known-issues.md` with the remaining heuristic limits.
+- [x] Run the full test suite.
 
 ## 10. Open Questions And Risks
 

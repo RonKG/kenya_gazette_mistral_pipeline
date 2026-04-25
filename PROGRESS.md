@@ -18,8 +18,8 @@ Session-start prompt:
 
 ## Today
 
-**Current:** F16 ⬜ Next - Exclude post-notice tail  
-**What:** Keep ads/catalogues/subscriber notes in joined markdown but exclude them from parsed notices.  
+**Current:** F16 ✅ Complete - Exclude post-notice tail  
+**What:** Final parsed notices now exclude detected post-notice catalogue/subscriber/advertisement tails while joined markdown remains complete.  
 **Where:** `gazette_mistral_pipeline/notice_parsing.py`, notice parsing tests, cached 2009 regression fixture  
 **Previous:** F15 ✅ - Clean page running headers complete.
 
@@ -42,14 +42,14 @@ Session-start prompt:
 | F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ✅ Complete | 69b40d2 |
 | F14 | Live local PDF upload support | Upload local or network PDF paths to Mistral, OCR by `file_id`, and keep `parse_file` live-capable | ✅ Complete | 17ae63d |
 | F15 | Clean page running headers | Strip repeated gazette page title/date/page-number headers from joined markdown before notice parsing | ✅ Complete | 17ae63d |
-| F16 | Exclude post-notice tail | Keep ads/catalogues/subscriber notes in joined markdown but exclude them from parsed notices | ⬜ Next | - |
+| F16 | Exclude post-notice tail | Keep ads/catalogues/subscriber notes in joined markdown but exclude them from parsed notices | ✅ Complete | - |
 
 ## Quality Gates
 
 | Gate | Condition | Status |
 |------|-----------|--------|
 | Gate 0 | Package processes one PDF source through mocked or replayed Mistral and writes default bundles | ✅ Reached - F10 replay public parse and default bundle writer tests pass offline |
-| Gate 1 | Regression checks pass on selected cached Mistral OCR JSON fixtures from `prototype_outputs` | ✅ Reached - `tests/test_cached_mistral_regression.py` runs the full replay pipeline on two committed real-gazette fixtures (2026-04-17 vol 68, 2009-12-11 vol 103), asserts pinned page count, notice/table count ranges, and pinned SHA256 hashes, and verifies F15 running-header cleanup on the 2009 fixture; 3 Gate 1/F15 tests pass offline |
+| Gate 1 | Regression checks pass on selected cached Mistral OCR JSON fixtures from `prototype_outputs` | ✅ Reached - `tests/test_cached_mistral_regression.py` runs the full replay pipeline on two committed real-gazette fixtures (2026-04-17 vol 68, 2009-12-11 vol 103), asserts pinned page count, notice/table count ranges, and pinned SHA256 hashes, and verifies F15 running-header cleanup plus F16 post-notice tail exclusion on the 2009 fixture; 4 Gate 1/F15/F16 tests pass offline |
 | Gate 2 | Re-running the same cached response produces deterministic source IDs, run IDs, and notice IDs | ✅ Reached - `tests/test_cached_mistral_regression.py` runs each fixture twice and asserts run names, SHA256s, page/notice/table counts, all notice IDs in order, all notice content hashes, and Mistral metadata are byte-identical across runs; 2 Gate 2 parametrized tests pass offline |
 | Gate 3 | `from gazette_mistral_pipeline import parse_file, write_envelope` works after install | ✅ Reached - F12 local fresh-venv install smoke verifies root parse/write/schema imports after install |
 | Gate 4 | Envelope validates against its JSON Schema | ✅ Reached - F11 exports deterministic envelope JSON Schema, validates JSON inputs through the canonical `Envelope`, and writes schema bundles offline |
@@ -66,7 +66,7 @@ Session-start prompt:
 | D5 | API keys must come from environment/config, not checked-in notebooks or fixtures | Enduring gotcha | - | Secret leakage risk |
 | D6 | Live local PDF OCR upload/file-reference support | Closed in F14 | - | Local and network PDF paths now upload to Mistral Files with `purpose="ocr"` and OCR by returned `file_id` |
 | D7 | Repeated PDF running headers pollute notice text | Closed in F15 | - | Joined markdown now strips recognizable standalone page title/date/page-number lines at page boundaries before notice parsing |
-| D8 | Post-notice ads and subscriber pages can pollute final notice | Active debt | F16 | The parser currently slices the last `GAZETTE NOTICE NO...` to end-of-document, so final notices can absorb `NOW ON SALE`, subscriber notes, and advertisement charges |
+| D8 | Post-notice ads and subscriber pages can pollute final notice | Closed in F16 | - | Final parsed notices now stop before detected catalogue, subscriber, and advertisement tail material while joined markdown keeps the full source text |
 
 ## Reference Docs
 
@@ -90,7 +90,7 @@ Session-start prompt:
 - `specs/F13-notebook-driver-cleanup.md` - completed notebook driver cleanup spec
 - `specs/F14-live-local-pdf-upload.md` - completed live local PDF upload spec
 - `specs/F15-clean-page-running-headers.md` - completed page running header cleanup spec
-- `specs/F16-exclude-post-notice-tail.md` - planned final notice tail exclusion spec
+- `specs/F16-exclude-post-notice-tail.md` - completed final notice tail exclusion spec
 
 ## Session Log
 
@@ -115,5 +115,6 @@ Session-start prompt:
 | 2026-04-25 | F15 Clean page running headers spec | Documented the next feature to remove repeated gazette page title/date/page-number header fragments from stitched markdown before notice parsing, based on screenshots and the 2009 cached OCR fixture. Implementation intentionally not started yet. |
 | 2026-04-25 | F16 Exclude post-notice tail spec | Documented a planned parser cleanup that keeps post-notice ads/catalogues/subscriber notes in joined markdown but excludes them from parsed `Notice` objects, with conservative final-notice boundary rules and cached 2009 regression coverage. |
 | 2026-04-25 | F15 Clean page running headers | Added conservative page-boundary running header/footer cleanup during markdown stitching while preserving raw OCR pages, covered observed header permutations and 2009 cached replay regression, updated docs, and closed D7. `python -m pytest tests/test_page_normalization.py tests/test_cached_mistral_regression.py` and `python -m pytest` passed. |
+| 2026-04-25 | F16 Exclude post-notice tail | Added conservative final-notice tail detection in notice parsing, kept joined markdown intact, excluded catalogue/subscriber/ad-charge tail material from parsed notices, updated parser marker/docs, and closed D8. `python -m pytest tests/test_notice_parsing.py tests/test_cached_mistral_regression.py` and `python -m pytest` passed. |
 
 Add a row here at the end of every session.
