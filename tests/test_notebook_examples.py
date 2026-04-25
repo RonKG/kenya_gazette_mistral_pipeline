@@ -191,8 +191,19 @@ def test_recommended_notebook_local_pdf_example_is_guarded() -> None:
     active_code = _non_comment_code_source(DRIVER_NOTEBOOK)
 
     assert "LOCAL_PDF = None" in source
-    assert "if LOCAL_PDF is not None:" in active_code
+    assert "if LOCAL_PDF is None:" in active_code
+    assert "else:" in active_code
     assert 'Path("/path/to/local-gazette.pdf")' not in source
+
+
+def test_recommended_notebook_cells_emit_status_output() -> None:
+    source = _notebook_source(DRIVER_NOTEBOOK)
+
+    assert 'print("Package imports ready.")' in source
+    assert 'print(f"Replay fixture: {replay_path}")' in source
+    assert 'print(f"Parsed run: {summary[\'run_name\']}")' in source
+    assert "Live OCR example skipped." in source
+    assert "Local PDF replay skipped." in source
 
 
 def _assert_no_absolute_local_paths_in_metadata_or_outputs(notebook: dict[str, Any]) -> None:
