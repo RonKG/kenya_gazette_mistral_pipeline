@@ -40,8 +40,8 @@ Session-start prompt:
 | F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ✅ Complete | 53fcd0b |
 | F12 | Installable package smoke test | Verify install, imports, schema package data, and git-install readiness | ✅ Complete | 47083f2 |
 | F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ✅ Complete | 69b40d2 |
-| F14 | Live local PDF upload support | Upload local or network PDF paths to Mistral, OCR by `file_id`, and keep `parse_file` live-capable | ✅ Complete | - |
-| F15 | Clean page running headers | Strip repeated gazette page title/date/page-number headers from joined markdown before notice parsing | ✅ Complete | - |
+| F14 | Live local PDF upload support | Upload local or network PDF paths to Mistral, OCR by `file_id`, and keep `parse_file` live-capable | ✅ Complete | 17ae63d |
+| F15 | Clean page running headers | Strip repeated gazette page title/date/page-number headers from joined markdown before notice parsing | ✅ Complete | 17ae63d |
 | F16 | Exclude post-notice tail | Keep ads/catalogues/subscriber notes in joined markdown but exclude them from parsed notices | ⬜ Next | - |
 
 ## Quality Gates
