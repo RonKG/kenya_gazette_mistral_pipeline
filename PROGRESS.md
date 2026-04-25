@@ -35,7 +35,7 @@ Session-start prompt:
 | F06 | Normalize and stitch pages | Normalize Mistral pages and write joined markdown | ✅ Complete | 9bf8dd8 |
 | F07 | Notice and table parsing | Parse joined markdown into notices, dates, tables, and corrigenda placeholders | ✅ Complete | 029c572 |
 | F08 | Confidence and spatial hints | Score notices and summarize optional Mistral coordinate metadata | ✅ Complete | 3f37408 |
-| F09 | Build validated envelope | Assemble and validate the enhanced Pydantic envelope | ✅ Complete | - |
+| F09 | Build validated envelope | Assemble and validate the enhanced Pydantic envelope | ✅ Complete | 4fe6eae |
 | F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ⬜ Next | - |
 | F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ⬜ Not started | - |
 | F12 | Installable package smoke test | Verify install, imports, schema package data, and git-install readiness | ⬜ Not started | - |
