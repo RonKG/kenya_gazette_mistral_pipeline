@@ -27,8 +27,8 @@ Session-start prompt:
 
 | ID | Name | Simple Explanation | Status | Commit |
 |----|------|--------------------|--------|--------|
-| F01 | Project SOP scaffold | Create progress, docs, specs, agents, and build gates | Complete | - |
-| F02 | Package skeleton | Create git-installable Python package with public API stubs | Complete | - |
+| F01 | Project SOP scaffold | Create progress, docs, specs, agents, and build gates | Complete | 954b16d |
+| F02 | Package skeleton | Create git-installable Python package with public API stubs | Complete | 954b16d |
 | F03 | Pydantic models | Define lightweight Mistral envelope, source, notices, tables, confidence, warnings, bundles, and spatial hints | Next | - |
 | F04 | PDF source loading | Support PDF URL, local PDF path, and manifests; derive stable run names | Not started | - |
 | F05 | Mistral API pass | Send PDF source to Mistral OCR, cache raw OCR JSON, support replay mode | Not started | - |
