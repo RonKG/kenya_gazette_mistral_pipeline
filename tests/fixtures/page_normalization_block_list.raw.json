@@ -1,0 +1,48 @@
+[
+  {
+    "id": "mistral_doc_2026_68_a",
+    "model": "mistral-ocr-latest",
+    "pdf_url": "https://new.kenyalaw.org/akn/ke/officialGazette/2026-04-17/68/eng@2026-04-17/source.pdf",
+    "pages": [
+      {
+        "index": 1,
+        "markdown": "GAZETTE NOTICE NO. 5568\n\nRepresentative second page.",
+        "dimensions": {
+          "width": 719,
+          "height": 1018
+        },
+        "images": [
+          {
+            "id": "img-1"
+          }
+        ],
+        "tables": []
+      },
+      {
+        "index": 0,
+        "markdown": "![img-0.jpeg](img-0.jpeg)\n\n# THE KENYA GAZETTE\n\nRepresentative first page.",
+        "dimensions": {
+          "width": 719,
+          "height": 1018
+        },
+        "images": [],
+        "tables": [
+          {
+            "id": "table-1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mistral_doc_2026_68_b",
+    "model": "mistral-ocr-latest",
+    "pages": [
+      {
+        "index": 0,
+        "markdown": "Second document page with Gazette Notice text.",
+        "hyperlinks": []
+      }
+    ]
+  }
+]
