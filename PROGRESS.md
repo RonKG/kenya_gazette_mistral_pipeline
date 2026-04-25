@@ -39,7 +39,7 @@ Session-start prompt:
 | F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ✅ Complete | 53fcd0b |
 | F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ✅ Complete | 53fcd0b |
 | F12 | Installable package smoke test | Verify install, imports, schema package data, and git-install readiness | ✅ Complete | 47083f2 |
-| F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ✅ Complete | - |
+| F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ✅ Complete | a6f37f0 |
 
 ## Quality Gates
 
