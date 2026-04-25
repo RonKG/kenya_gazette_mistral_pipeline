@@ -186,6 +186,15 @@ def test_recommended_notebook_default_is_offline_replay() -> None:
     assert "MISTRAL_API_KEY" not in active_code
 
 
+def test_recommended_notebook_local_pdf_example_is_guarded() -> None:
+    source = _notebook_source(DRIVER_NOTEBOOK)
+    active_code = _non_comment_code_source(DRIVER_NOTEBOOK)
+
+    assert "LOCAL_PDF = None" in source
+    assert "if LOCAL_PDF is not None:" in active_code
+    assert 'Path("/path/to/local-gazette.pdf")' not in source
+
+
 def _assert_no_absolute_local_paths_in_metadata_or_outputs(notebook: dict[str, Any]) -> None:
     text = _metadata_and_outputs_text(notebook)
     for pattern in ABSOLUTE_LOCAL_PATH_PATTERNS:
