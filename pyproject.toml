@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gazette-mistral-pipeline"
+version = "0.1.0"
+description = "Lightweight Mistral OCR pipeline for Kenya Gazette PDFs."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Ronald Wahome" },
+]
+keywords = ["kenya", "gazette", "mistral", "ocr", "etl", "legal"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Legal Industry",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "jupyter>=1.1.0",
+    "ipykernel>=7.0.0",
+    "pytest>=8.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/<owner>/gazette-mistral-pipeline"
+Repository = "https://github.com/<owner>/gazette-mistral-pipeline"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gazette_mistral_pipeline*"]
+exclude = ["tests*", "docs*", "specs*", "prototype_outputs*", ".venv*"]
+
+[tool.setuptools.package-data]
+gazette_mistral_pipeline = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

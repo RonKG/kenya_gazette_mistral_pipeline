@@ -1,0 +1,34 @@
+---
+description: Run the feature build orchestrator when the user says "kick off FXX" or "build FXX".
+alwaysApply: true
+---
+
+# Feature Build Autoflow
+
+## Trigger
+
+When the user's message matches either pattern, case-insensitive:
+
+- `kick off FXX`
+- `build FXX`
+
+where `FXX` is a feature ID from `PROGRESS.md`, treat it as a request to run the full feature workflow.
+
+## Required Behavior
+
+1. Read `.cursor/agents/agent-0-orchestrator.md`.
+2. Follow the orchestrator workflow exactly.
+3. Run the spec stage first.
+4. Present the spec summary, open questions, and approval options.
+5. Wait for explicit approval before implementation.
+6. Run the build stage only after approval.
+7. Run the review stage only if the build stage passes.
+8. Stop on any failure and report it.
+
+## Do Not
+
+- Do not skip the approval pause.
+- Do not auto-retry failed stages.
+- Do not auto-commit.
+- Do not treat "review FXX" as a full build trigger.
+- Do not run live Mistral API tests unless the spec and user explicitly allow them.
