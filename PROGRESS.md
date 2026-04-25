@@ -18,10 +18,10 @@ Session-start prompt:
 
 ## Today
 
-**Current:** F05 - Mistral API pass  
-**What:** Send PDF source to Mistral OCR, cache raw OCR JSON, support replay mode.  
-**Where:** Mistral client/API modules to be specified  
-**Previous:** F04 ✅ - PDF source loading implemented and tested.
+**Current:** F06 - Normalize and stitch pages  
+**What:** Normalize Mistral pages and write joined markdown.  
+**Where:** Page normalization and markdown stitching modules to be specified  
+**Previous:** F05 ✅ - Mistral API pass implemented and tested.
 
 ## Work Items
 
@@ -31,8 +31,8 @@ Session-start prompt:
 | F02 | Package skeleton | Create git-installable Python package with public API stubs | ✅ Complete | 954b16d |
 | F03 | Pydantic models | Define lightweight Mistral envelope, source, notices, tables, confidence, warnings, bundles, and spatial hints | ✅ Complete | 423f69e |
 | F04 | PDF source loading | Support PDF URL, local PDF path, and manifests; derive stable run names | ✅ Complete | 164da54 |
-| F05 | Mistral API pass | Send PDF source to Mistral OCR, cache raw OCR JSON, support replay mode | ⬜ Next | - |
-| F06 | Normalize and stitch pages | Normalize Mistral pages and write joined markdown | ⬜ Not started | - |
+| F05 | Mistral API pass | Send PDF source to Mistral OCR, cache raw OCR JSON, support replay mode | ✅ Complete | - |
+| F06 | Normalize and stitch pages | Normalize Mistral pages and write joined markdown | ⬜ Next | - |
 | F07 | Notice and table parsing | Parse joined markdown into notices, dates, tables, and corrigenda placeholders | ⬜ Not started | - |
 | F08 | Confidence and spatial hints | Score notices and summarize optional Mistral coordinate metadata | ⬜ Not started | - |
 | F09 | Build validated envelope | Assemble and validate the enhanced Pydantic envelope | ⬜ Not started | - |
@@ -61,6 +61,7 @@ Session-start prompt:
 | D3 | Mistral API calls must be opt-in in tests | Enduring gotcha | - | Normal test runs could become slow, flaky, or billable |
 | D4 | Mistral response JSON may not contain word-level coordinates | Enduring gotcha | - | Spatial hints can improve provenance but cannot promise full reading-order reconstruction |
 | D5 | API keys must come from environment/config, not checked-in notebooks or fixtures | Enduring gotcha | - | Secret leakage risk |
+| D6 | Live local PDF OCR upload/file-reference support is not implemented yet | Active debt | F10 or later | Local PDF sources work in replay mode, but live local OCR fails until an explicit upload flow is added |
 
 ## Reference Docs
 
@@ -73,6 +74,7 @@ Session-start prompt:
 - `specs/F02-package-skeleton.md` - completed package skeleton spec
 - `specs/F03-pydantic-models.md` - completed Pydantic model spec
 - `specs/F04-pdf-source-loading.md` - completed PDF source loading spec
+- `specs/F05-mistral-api-pass.md` - completed Mistral API pass spec
 
 ## Session Log
 
@@ -82,5 +84,6 @@ Session-start prompt:
 | 2026-04-25 | F02 Package skeleton | Created installable package shell, public API stubs, `pyproject.toml`, README, Apache-2.0 license, and skeleton tests. `python -m pytest tests/test_package_skeleton.py` passed; `python -m pip install -e .` passed. |
 | 2026-04-25 | F03 Pydantic models | Added strict Pydantic model layer, model root exports, config and bundle defaults, optional spatial hints, and model tests. `python -m pytest tests/test_package_skeleton.py tests/test_models.py` passed. |
 | 2026-04-25 | F04 PDF source loading | Added source-loading helpers for PDF URLs, local PDFs, JSON manifests, stable run names, source SHA-256 hashes, and invalid-input checks. `python -m pytest` passed. |
+| 2026-04-25 | F05 Mistral API pass | Added stdlib Mistral OCR URL requests, deterministic raw JSON cache/replay helpers, safe `MistralMetadata` population, explicit live-local unsupported behavior, and mocked/replay tests. `python -m pytest` passed. |
 
 Add a row here at the end of every session.
