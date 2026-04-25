@@ -54,8 +54,14 @@ The parser is markdown and regex based. It can miss or merge notices when OCR ou
 
 Confidence scores and trace bundles should make these cases visible.
 
+## Page Running Header Cleanup
+
+Joined markdown strips recognizable standalone Kenya Gazette running header/footer lines at page boundaries before parsing.
+
+This cleanup is intentionally conservative. It does not repair headers embedded in tables, paragraphs, images, or other non-standalone OCR structures.
+
 ## Local PDF Upload Path
 
-For local PDFs, Mistral OCR may require an upload or file-reference step before OCR. This must be implemented explicitly in the Mistral API feature and covered by replay tests.
+For local PDFs, Mistral OCR requires an upload or file-reference step before OCR. F14 implements this by uploading the PDF to Mistral Files with `purpose="ocr"` and then calling OCR with the returned `file_id`.
 
-The package should not assume local PDFs can be passed exactly like document URLs unless the API supports that request shape.
+The package must not pass local filesystem paths as `document_url` values. Live tests remain opt-in; normal tests should mock upload and OCR calls.

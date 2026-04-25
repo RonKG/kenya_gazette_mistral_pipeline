@@ -43,7 +43,7 @@ network calls.
 ```python
 from pathlib import Path
 
-from gazette_mistral_pipeline import Bundles, GazetteConfig, parse_url, write_envelope
+from gazette_mistral_pipeline import Bundles, GazetteConfig, parse_file, parse_url, write_envelope
 
 config = GazetteConfig(
     runtime={
@@ -60,12 +60,39 @@ written = write_envelope(
 )
 ```
 
+The raw Mistral JSON remains the audit artifact. The joined markdown bundle is
+the normalized parsing artifact and strips recognizable Kenya Gazette running
+headers/footers at page boundaries before notice parsing.
+
+Live Mistral runs are opt-in and require an explicit output directory:
+
+```python
+from pathlib import Path
+
+from gazette_mistral_pipeline import GazetteConfig, parse_file, parse_url
+
+live_config = GazetteConfig(
+    runtime={
+        "allow_live_mistral": True,
+        "output_dir": Path("examples/_live_outputs/stage"),
+    }
+)
+
+# Public remote PDF: sent to Mistral as document_url.
+url_env = parse_url("https://example.com/source.pdf", config=live_config)
+
+# Local or network PDF path: uploaded to Mistral Files first, then OCR'd by file_id.
+file_env = parse_file(Path(r"C:\path\to\Kenya Gazette.pdf"), config=live_config)
+```
+
 ## Notebook Example
 
 Use `examples/gazette_package_driver.ipynb` as the recommended notebook driver.
-It imports package-root APIs and defaults to offline replay with the tiny
-`examples/tiny_replay.raw.json` fixture, so it does not require `MISTRAL_API_KEY`,
-network access, `.env`, live Mistral calls, or historical `prototype_outputs`.
+It imports package-root APIs, runs a live public PDF URL smoke test when
+`MISTRAL_API_KEY` is present, and includes an optional `parse_file(...)` local
+PDF example. The notebook keeps generated live outputs under ignored example
+output folders. Offline replay remains supported through
+`runtime.replay_raw_json_path` for tests and deterministic local runs.
 
 Historical notebooks `examples/historical/gazette_etl_prototype.ipynb` and
 `examples/historical/gazette_iteration_pipeline.ipynb` are prototype context only

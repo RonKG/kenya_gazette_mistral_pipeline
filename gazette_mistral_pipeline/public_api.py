@@ -20,7 +20,7 @@ from gazette_mistral_pipeline.source_loading import resolve_pdf_source
 
 
 def parse_file(path: str | Path, *, config: GazetteConfig | None = None) -> Envelope:
-    """Parse a local PDF file through replay OCR and return a validated envelope."""
+    """Parse a local PDF file through live or replayed Mistral OCR."""
 
     return parse_source(Path(path), config=config)
 
@@ -106,16 +106,10 @@ def _validate_runtime_mode(source: PdfSource, config: GazetteConfig) -> None:
     if config.runtime.replay_raw_json_path is not None:
         return
 
-    if source.source_type == "local_pdf":
-        raise NotImplementedError(
-            "Live Mistral OCR for local PDF sources is not supported in F10; "
-            "configure runtime.replay_raw_json_path for local PDF parsing."
-        )
-
     if not config.runtime.allow_live_mistral:
         raise RuntimeError(
             "Live Mistral OCR is disabled by default; set "
-            "runtime.allow_live_mistral=True and runtime.output_dir for live URL OCR."
+            "runtime.allow_live_mistral=True and runtime.output_dir for live OCR."
         )
 
     if config.runtime.output_dir is None:

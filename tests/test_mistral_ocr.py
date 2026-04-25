@@ -10,7 +10,9 @@ from pathlib import Path
 import pytest
 
 from gazette_mistral_pipeline.mistral_ocr import (
+    MISTRAL_FILES_URL,
     MISTRAL_OCR_URL,
+    build_file_id_ocr_body,
     build_document_url_ocr_body,
     load_raw_mistral_json,
     run_mistral_ocr,
@@ -75,6 +77,17 @@ def test_build_document_url_ocr_body_matches_prototype_shape() -> None:
     }
 
 
+def test_build_file_id_ocr_body_matches_uploaded_pdf_shape() -> None:
+    body = build_file_id_ocr_body("file_abc123", model="mistral-ocr-latest")
+
+    assert body == {
+        "model": "mistral-ocr-latest",
+        "document": {
+            "file_id": "file_abc123",
+        },
+    }
+
+
 def test_pdf_url_live_ocr_uses_stdlib_post_and_writes_metadata(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -134,6 +147,89 @@ def test_pdf_url_live_ocr_uses_stdlib_post_and_writes_metadata(
         "document_type": "document_url",
     }
     assert "test-key-123" not in json.dumps(result.metadata.request_options)
+
+
+def test_local_pdf_live_ocr_uploads_file_then_posts_file_id(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pdf_bytes = b"%PDF-1.4\nlocal pdf\n"
+    pdf_path = tmp_path / "sample.pdf"
+    pdf_path.write_bytes(pdf_bytes)
+    payload = {
+        "id": "doc_from_uploaded_file",
+        "model": "mistral-ocr-latest",
+        "pages": [{"index": 0, "markdown": "text"}],
+    }
+    source = PdfSource(
+        source_type="local_pdf",
+        source_value=str(pdf_path),
+        run_name="sample",
+        source_sha256="c" * 64,
+    )
+    requests: list[urllib.request.Request] = []
+
+    def fake_urlopen(request: urllib.request.Request, timeout: float) -> _FakeResponse:
+        requests.append(request)
+        assert timeout == 12.5
+        if request.full_url == MISTRAL_FILES_URL:
+            headers = {key.lower(): value for key, value in request.header_items()}
+            assert headers["authorization"] == "Bearer test-key-123"
+            assert headers["content-type"].startswith("multipart/form-data; boundary=")
+            body = request.data or b""
+            assert b'name="purpose"' in body
+            assert b"ocr" in body
+            assert b'name="file"; filename="sample.pdf"' in body
+            assert b"Content-Type: application/pdf" in body
+            assert pdf_bytes in body
+            return _FakeResponse(
+                _canonical_json_bytes(
+                    {
+                        "id": "file_abc123",
+                        "filename": "sample.pdf",
+                        "bytes": len(pdf_bytes),
+                        "purpose": "ocr",
+                    }
+                )
+            )
+        if request.full_url == MISTRAL_OCR_URL:
+            assert json.loads(request.data.decode("utf-8")) == {
+                "model": "mistral-ocr-latest",
+                "document": {
+                    "file_id": "file_abc123",
+                },
+            }
+            return _FakeResponse(_canonical_json_bytes(payload))
+        raise AssertionError(f"unexpected URL: {request.full_url}")
+
+    monkeypatch.setenv("MISTRAL_API_KEY_TEST", "test-key-123")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+
+    config = GazetteConfig(mistral={
+        "api_key_env": "MISTRAL_API_KEY_TEST",
+        "timeout_seconds": 12.5,
+    })
+    result = run_mistral_ocr(source, config=config, cache_dir=tmp_path)
+
+    assert [request.full_url for request in requests] == [MISTRAL_FILES_URL, MISTRAL_OCR_URL]
+    raw_json_path = tmp_path / "sample.raw.json"
+    raw_bytes = raw_json_path.read_bytes()
+    assert result.raw_json == payload
+    assert result.metadata.raw_json_path == str(raw_json_path)
+    assert result.metadata.raw_json_sha256 == hashlib.sha256(raw_bytes).hexdigest()
+    assert result.metadata.document_url is None
+    assert result.metadata.mistral_doc_ids == ["doc_from_uploaded_file"]
+    assert result.metadata.page_count == 1
+    assert result.metadata.request_options == {
+        "source_type": "local_pdf",
+        "model": "mistral-ocr-latest",
+        "timeout_seconds": 12.5,
+        "replay": False,
+        "document_type": "file_id",
+        "uploaded_file_id": "file_abc123",
+        "uploaded_file_name": "sample.pdf",
+        "uploaded_file_bytes": len(pdf_bytes),
+    }
 
 
 def test_replay_mode_bypasses_network_and_api_key(
@@ -318,17 +414,27 @@ def test_http_errors_are_sanitized(
     assert not list(tmp_path.glob("*.raw.json"))
 
 
-def test_live_local_pdf_is_explicitly_unsupported_without_network(
+def test_missing_api_key_for_live_local_pdf_fails_before_upload(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def fail_urlopen(*args: object, **kwargs: object) -> None:
-        raise AssertionError("live local unsupported path must not call urlopen")
+    pdf_path = tmp_path / "sample.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\nlocal\n")
+    source = PdfSource(
+        source_type="local_pdf",
+        source_value=str(pdf_path),
+        run_name="sample",
+        source_sha256="c" * 64,
+    )
 
+    def fail_urlopen(*args: object, **kwargs: object) -> None:
+        raise AssertionError("missing key must not call urlopen")
+
+    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
     monkeypatch.setattr(urllib.request, "urlopen", fail_urlopen)
 
-    with pytest.raises(NotImplementedError, match="local_pdf sources is not supported in F05"):
-        run_mistral_ocr(_local_pdf_source(tmp_path), cache_dir=tmp_path)
+    with pytest.raises(OSError, match="MISTRAL_API_KEY"):
+        run_mistral_ocr(source, cache_dir=tmp_path)
 
     assert not list(tmp_path.glob("*.raw.json"))
 

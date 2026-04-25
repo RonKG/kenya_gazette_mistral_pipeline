@@ -10,6 +10,7 @@ from gazette_mistral_pipeline.models import Stats
 from gazette_mistral_pipeline.page_normalization import (
     NormalizedPage,
     StitchedMarkdownResult,
+    clean_page_running_headers,
     compute_stats,
     load_mistral_blocks,
     normalize_mistral_pages,
@@ -196,6 +197,78 @@ def test_markdown_content_is_preserved_apart_from_boundary_trimming() -> None:
     assert "| Gazette Notice | text |" in markdown
     assert "GAZETTE NOTICE NO. 12" in markdown
     assert markdown.endswith("GAZETTE NOTICE NO. 12\n")
+
+
+@pytest.mark.parametrize(
+    "dirty_markdown",
+    [
+        "3508\nTHE KENYA GAZETTE\n11th December, 2009\n\nGAZETTE NOTICE NO. 13174\nBody",
+        "11th December, 2009\nTHE KENYA GAZETTE\n3509\n\nGAZETTE NOTICE NO. 13176\nBody",
+        "THE KENYA GAZETTE\n11th December, 2009\n\nGAZETTE NOTICE NO. 13182\nBody",
+        "17th April, 2026\n\nTHE KENYA GAZETTE\n\n2015\n\nContinuation body",
+    ],
+)
+def test_clean_page_running_headers_strips_top_boundary_permutations(dirty_markdown: str) -> None:
+    cleaned = clean_page_running_headers(dirty_markdown, page_index=1)
+
+    assert cleaned.startswith(("GAZETTE NOTICE", "Continuation body"))
+    assert not cleaned.startswith(("3508", "3509", "2015", "THE KENYA GAZETTE", "11th December", "17th April"))
+
+
+def test_clean_page_running_headers_strips_footer_boundary_block() -> None:
+    dirty_markdown = "GAZETTE NOTICE NO. 1\nBody\n\n11th December, 2009\nTHE KENYA GAZETTE\n3509"
+
+    cleaned = clean_page_running_headers(dirty_markdown, page_index=2)
+
+    assert cleaned == "GAZETTE NOTICE NO. 1\nBody"
+
+
+def test_clean_page_running_headers_preserves_title_page_masthead() -> None:
+    title_page = "# THE KENYA GAZETTE\n\nPublished by Authority\n\nNAIROBI, 11th December, 2009"
+
+    assert clean_page_running_headers(title_page, page_index=0) == title_page
+
+
+def test_clean_page_running_headers_preserves_body_mentions_and_standalone_numbers() -> None:
+    body_markdown = (
+        "GAZETTE NOTICE NO. 2\n\n"
+        "This notice was published in the Kenya Gazette.\n\n"
+        "3509\n"
+    )
+
+    assert clean_page_running_headers(body_markdown, page_index=3) == body_markdown
+
+
+def test_stitch_markdown_pages_cleans_headers_without_mutating_normalized_pages() -> None:
+    pages = normalize_mistral_pages(
+        {
+            "id": "doc_clean",
+            "pages": [
+                {"index": 0, "markdown": "# THE KENYA GAZETTE\n\nContents"},
+                {
+                    "index": 1,
+                    "markdown": "3508\nTHE KENYA GAZETTE\n11th December, 2009\n\nGAZETTE NOTICE NO. 13174",
+                },
+            ],
+        }
+    )
+
+    markdown = stitch_markdown_pages(pages)
+
+    assert pages[1].markdown.startswith("3508\nTHE KENYA GAZETTE\n11th December, 2009")
+    assert "## Index 0\n\n# THE KENYA GAZETTE\n\nContents" in markdown
+    assert "## Index 1\n\nGAZETTE NOTICE NO. 13174" in markdown
+    assert "## Index 1\n\n3508\nTHE KENYA GAZETTE" not in markdown
+
+
+def test_stitch_markdown_pages_can_render_raw_page_headers_for_debugging() -> None:
+    pages = normalize_mistral_pages(
+        {"pages": [{"index": 1, "markdown": "3508\nTHE KENYA GAZETTE\n11th December, 2009\n\nBody"}]}
+    )
+
+    markdown = stitch_markdown_pages(pages, clean_running_headers=False)
+
+    assert "3508\nTHE KENYA GAZETTE\n11th December, 2009\n\nBody" in markdown
 
 
 def test_write_joined_markdown_writes_only_requested_stage_artifact(tmp_path: Path) -> None:

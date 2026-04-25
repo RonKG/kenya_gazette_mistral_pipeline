@@ -218,7 +218,71 @@ def test_live_url_with_mocked_http_writes_raw_cache_and_envelope(
     assert captured["timeout"] == 8.0
 
 
-def test_live_local_pdf_remains_unsupported_without_network(
+def test_live_local_pdf_uploads_then_ocr_by_file_id(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pdf_bytes = b"%PDF-1.4\nsample local gazette\n"
+    pdf_path = tmp_path / "Local Gazette.pdf"
+    pdf_path.write_bytes(pdf_bytes)
+    requests: list[urllib.request.Request] = []
+
+    def fake_urlopen(request: urllib.request.Request, timeout: float) -> _FakeResponse:
+        requests.append(request)
+        assert timeout == 8.0
+        if request.full_url == mistral_ocr.MISTRAL_FILES_URL:
+            body = request.data or b""
+            assert b'name="purpose"' in body
+            assert b"ocr" in body
+            assert b'name="file"; filename="Local Gazette.pdf"' in body
+            assert pdf_bytes in body
+            return _FakeResponse(
+                json.dumps(
+                    {
+                        "id": "file_local_pdf_123",
+                        "object": "file",
+                        "bytes": len(pdf_bytes),
+                        "filename": "Local Gazette.pdf",
+                        "purpose": "ocr",
+                    }
+                ).encode("utf-8")
+            )
+
+        if request.full_url == mistral_ocr.MISTRAL_OCR_URL:
+            body = json.loads((request.data or b"").decode("utf-8"))
+            assert body == {
+                "document": {"file_id": "file_local_pdf_123"},
+                "model": "mistral-ocr-latest",
+            }
+            return _FakeResponse(json.dumps(_raw_payload()).encode("utf-8"))
+
+        raise AssertionError(f"unexpected URL: {request.full_url}")
+
+    monkeypatch.setenv("MISTRAL_API_KEY_TEST", "test-key")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    config = GazetteConfig(
+        mistral={"api_key_env": "MISTRAL_API_KEY_TEST", "timeout_seconds": 8.0},
+        runtime={"allow_live_mistral": True, "output_dir": tmp_path / "stage"},
+    )
+
+    env = gmp.parse_file(pdf_path, config=config)
+
+    assert len(requests) == 2
+    assert env.source.source_type == "local_pdf"
+    assert env.source.source_value == str(pdf_path.resolve())
+    assert env.source.run_name == "Local_Gazette"
+    assert env.mistral.document_url is None
+    assert env.mistral.request_options["replay"] is False
+    assert env.mistral.request_options["document_type"] == "file_id"
+    assert env.mistral.request_options["uploaded_file_id"] == "file_local_pdf_123"
+    assert env.mistral.request_options["uploaded_file_name"] == "Local Gazette.pdf"
+    assert env.mistral.request_options["uploaded_file_bytes"] == len(pdf_bytes)
+    assert env.mistral.raw_json_path == str(tmp_path / "stage" / "Local_Gazette.raw.json")
+    assert Path(env.mistral.raw_json_path).is_file()
+    assert (tmp_path / "stage" / "Local_Gazette_joined.md").is_file()
+
+
+def test_live_local_pdf_requires_live_opt_in_before_upload(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -226,13 +290,12 @@ def test_live_local_pdf_remains_unsupported_without_network(
     pdf_path.write_bytes(b"%PDF-1.4\nsample\n")
 
     def fail_urlopen(*args: object, **kwargs: object) -> None:
-        raise AssertionError("unsupported live local mode must not call network")
+        raise AssertionError("disabled live local mode must not call network")
 
     monkeypatch.setattr(urllib.request, "urlopen", fail_urlopen)
-    config = GazetteConfig(runtime={"allow_live_mistral": True, "output_dir": tmp_path / "stage"})
 
-    with pytest.raises(NotImplementedError, match="local PDF sources is not supported in F10"):
-        gmp.parse_file(pdf_path, config=config)
+    with pytest.raises(RuntimeError, match="allow_live_mistral"):
+        gmp.parse_file(pdf_path)
 
     assert not (tmp_path / "stage").exists()
 

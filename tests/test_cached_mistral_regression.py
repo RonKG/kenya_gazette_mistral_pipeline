@@ -60,6 +60,25 @@ def _replay_config(spec: dict, output_dir: Path) -> GazetteConfig:
     )
 
 
+def test_f15_2009_running_headers_are_excluded_from_joined_markdown_and_notice_text(tmp_path: Path) -> None:
+    """F15: page running headers should not become the previous notice tail."""
+
+    spec = next(item for item in FIXTURE_SPECS if item["run_name"] == "gazette_2009-12-11_103")
+    raw_before = spec["raw_json"].read_bytes()
+    stage_dir = tmp_path / "stage"
+
+    env = gmp.parse_url(spec["url"], config=_replay_config(spec, stage_dir))
+    joined_markdown = (stage_dir / f"{spec['run_name']}_joined.md").read_text(encoding="utf-8")
+
+    assert spec["raw_json"].read_bytes() == raw_before
+    assert "\n## Index 2\n\nGAZETTE NOTICE NO. 13176" in joined_markdown
+    assert "\n## Index 2\n\n11th December, 2009\nTHE KENYA GAZETTE\n3509" not in joined_markdown
+
+    notice_13175 = next(notice for notice in env.notices if notice.notice_no == "13175")
+    assert "11th December, 2009\nTHE KENYA GAZETTE\n3509" not in notice_13175.raw_markdown
+    assert "THE KENYA GAZETTE 3509" not in notice_13175.text
+
+
 @pytest.mark.parametrize("spec", FIXTURE_SPECS, ids=[s["run_name"] for s in FIXTURE_SPECS])
 def test_gate1_cached_fixture_processes_and_validates(
     spec: dict,

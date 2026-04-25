@@ -191,11 +191,13 @@ def test_recommended_notebook_default_is_live_mistral_pdf_url() -> None:
     assert "RUN_LIVE_OCR = False" not in active_code
 
 
-def test_recommended_notebook_documents_local_pdf_upload_gap() -> None:
+def test_recommended_notebook_documents_local_pdf_upload_path() -> None:
     source = _notebook_source(DRIVER_NOTEBOOK)
 
-    assert "does not yet upload local PDFs to Mistral" in source
-    assert "document_url" in source
+    assert "Local or network PDF paths now work through `parse_file(...)`" in source
+    assert "purpose=\"ocr\"" in source
+    assert "file_id" in source
+    assert "parse_file(Path(LOCAL_PDF), config=local_config)" in source
     assert 'Path("/path/to/local-gazette.pdf")' not in source
 
 

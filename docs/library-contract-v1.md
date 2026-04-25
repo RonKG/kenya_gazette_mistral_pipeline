@@ -87,7 +87,7 @@ Each source is processed as:
 3. Call Mistral OCR.
 4. Cache the raw response as `<run>.raw.json`.
 5. Normalize response pages.
-6. Stitch page markdown as `<run>_joined.md`.
+6. Stitch page markdown as `<run>_joined.md`, removing recognizable page running headers/footers at page boundaries.
 7. Parse markdown into notices and tables.
 8. Add confidence scores, warnings, and optional spatial hints.
 9. Validate a Pydantic `Envelope`.
@@ -157,7 +157,7 @@ Each notice should include:
 Default bundles should be fast and useful:
 
 - `envelope`: `<run>_envelope.json`
-- `joined_markdown`: `<run>_joined.md`
+- `joined_markdown`: `<run>_joined.md` after page normalization and boundary running-header cleanup
 - `raw_mistral_json`: `<run>.raw.json`
 - `source_metadata`: `<run>_source.json`
 
