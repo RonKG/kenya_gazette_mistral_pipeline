@@ -66,14 +66,14 @@ def test_public_stub_signatures_are_stable() -> None:
     assert parse_source_sig.parameters["config"].kind is inspect.Parameter.KEYWORD_ONLY
 
 
-def test_pyproject_metadata_has_no_runtime_dependencies() -> None:
+def test_pyproject_metadata_has_expected_runtime_dependencies() -> None:
     data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     project = data["project"]
     assert project["name"] == "gazette-mistral-pipeline"
     assert project["version"] == "0.1.0"
     assert project["requires-python"] == ">=3.10"
     assert project["license"]["text"] == "Apache-2.0"
-    assert project.get("dependencies", []) == []
+    assert project.get("dependencies", []) == ["pydantic>=2.0"]
 
 
 def test_type_marker_and_license_exist() -> None:
