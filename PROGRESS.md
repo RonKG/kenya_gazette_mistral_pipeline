@@ -36,8 +36,8 @@ Session-start prompt:
 | F07 | Notice and table parsing | Parse joined markdown into notices, dates, tables, and corrigenda placeholders | ✅ Complete | 029c572 |
 | F08 | Confidence and spatial hints | Score notices and summarize optional Mistral coordinate metadata | ✅ Complete | 3f37408 |
 | F09 | Build validated envelope | Assemble and validate the enhanced Pydantic envelope | ✅ Complete | 4fe6eae |
-| F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ✅ Complete | - |
-| F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ✅ Complete | - |
+| F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ✅ Complete | 53fcd0b |
+| F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ✅ Complete | 53fcd0b |
 | F12 | Installable package smoke test | Verify install, imports, schema package data, and git-install readiness | ⬜ Next | - |
 | F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ⬜ Not started | - |
 
