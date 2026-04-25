@@ -18,10 +18,10 @@ Session-start prompt:
 
 ## Today
 
-**Current:** F09 - Build validated envelope  
-**What:** Assemble parsed notices, confidence scores, layout hints, warnings, and counts into the validated envelope.  
-**Where:** Envelope assembly module to be specified  
-**Previous:** F08 ✅ - Confidence and spatial hints implemented and tested.
+**Current:** F10 - Public API and bundle writer  
+**What:** Expose parse/write functions and write output bundles over the completed F04-F09 stages.  
+**Where:** Package root API and bundle writer module to be specified  
+**Previous:** F09 ✅ - Build validated envelope implemented and tested.
 
 ## Work Items
 
@@ -35,8 +35,8 @@ Session-start prompt:
 | F06 | Normalize and stitch pages | Normalize Mistral pages and write joined markdown | ✅ Complete | 9bf8dd8 |
 | F07 | Notice and table parsing | Parse joined markdown into notices, dates, tables, and corrigenda placeholders | ✅ Complete | 029c572 |
 | F08 | Confidence and spatial hints | Score notices and summarize optional Mistral coordinate metadata | ✅ Complete | 3f37408 |
-| F09 | Build validated envelope | Assemble and validate the enhanced Pydantic envelope | ⬜ Next | - |
-| F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ⬜ Not started | - |
+| F09 | Build validated envelope | Assemble and validate the enhanced Pydantic envelope | ✅ Complete | - |
+| F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ⬜ Next | - |
 | F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ⬜ Not started | - |
 | F12 | Installable package smoke test | Verify install, imports, schema package data, and git-install readiness | ⬜ Not started | - |
 | F13 | Notebook driver cleanup | Convert notebooks into thin examples over the package API | ⬜ Not started | - |
@@ -49,7 +49,7 @@ Session-start prompt:
 | Gate 1 | Regression checks pass on selected cached Mistral OCR JSON fixtures from `prototype_outputs` | 🟨 Partial - F06 representative block-list raw JSON fixture passes; F07 representative inline notice/table/corrigenda snippets pass; F08 inline confidence/layout scoring snippets pass; broader cached-response regression waits for envelope stages |
 | Gate 2 | Re-running the same cached response produces deterministic source IDs, run IDs, and notice IDs | 🟨 Partial - F07 deterministic notice IDs and content hashes pass on inline joined-markdown fixtures; F08 deterministic confidence scores pass on inline fixtures; cached-response rerun waits for later envelope stages |
 | Gate 3 | `from gazette_mistral_pipeline import parse_file, write_envelope` works after install | 🟨 Partial - F02 import smoke and F03 model root exports passed; callable implementation waits for F10 |
-| Gate 4 | Envelope validates against its JSON Schema | ⬜ Not reached |
+| Gate 4 | Envelope validates against its JSON Schema | 🟨 Partial - F09 validates the assembled Pydantic `Envelope`; full JSON Schema export and validation wait for F11 |
 | Gate 5 | Fresh virtual environment install works as proxy for `pip install git+...` | ⬜ Not reached |
 
 ## Known Debt And Gotchas
@@ -78,6 +78,7 @@ Session-start prompt:
 - `specs/F06-normalize-and-stitch-pages.md` - completed page normalization and stitching spec
 - `specs/F07-notice-and-table-parsing.md` - completed notice and table parsing spec
 - `specs/F08-confidence-and-spatial-hints.md` - completed confidence and spatial hints spec
+- `specs/F09-build-validated-envelope.md` - completed validated envelope builder spec
 
 ## Session Log
 
@@ -91,5 +92,6 @@ Session-start prompt:
 | 2026-04-25 | F06 Normalize and stitch pages | Added page normalization dataclasses/helpers, deterministic sorting, joined markdown rendering/writing, representative raw JSON fixture, and F06 stats. `python -m pytest tests/test_page_normalization.py` and `python -m pytest` passed. |
 | 2026-04-25 | F07 Notice and table parsing | Added pure joined-markdown notice parsing, table extraction, corrigenda placeholders, deterministic hashes/IDs, provenance, and neutral F08 confidence placeholders. `python -m pytest tests/test_notice_parsing.py` and `python -m pytest` passed. |
 | 2026-04-25 | F08 Confidence and spatial hints | Added deterministic notice confidence scoring, document confidence aggregation, layout hint summaries, and bounded pipeline warnings. `python -m pytest tests/test_confidence_scoring.py` and `python -m pytest` passed. |
+| 2026-04-25 | F09 Build validated envelope | Added pure envelope assembly from F04-F08 outputs, canonical versions/timestamps, count drift checks, single-pass table flattening, Pydantic validation, and F09 tests. `python -m pytest tests/test_envelope_builder.py` and `python -m pytest` passed. |
 
 Add a row here at the end of every session.
