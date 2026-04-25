@@ -18,10 +18,10 @@ Session-start prompt:
 
 ## Today
 
-**Current:** F07 - Notice and table parsing  
-**What:** Parse joined markdown into notices, dates, tables, and corrigenda placeholders.  
-**Where:** Parser modules to be specified  
-**Previous:** F06 ✅ - Normalize and stitch pages implemented and tested.
+**Current:** F08 - Confidence and spatial hints  
+**What:** Score notices and summarize optional Mistral coordinate metadata.  
+**Where:** Confidence and spatial hint modules to be specified  
+**Previous:** F07 ✅ - Notice and table parsing implemented and tested.
 
 ## Work Items
 
@@ -33,8 +33,8 @@ Session-start prompt:
 | F04 | PDF source loading | Support PDF URL, local PDF path, and manifests; derive stable run names | ✅ Complete | 164da54 |
 | F05 | Mistral API pass | Send PDF source to Mistral OCR, cache raw OCR JSON, support replay mode | ✅ Complete | 8f791db |
 | F06 | Normalize and stitch pages | Normalize Mistral pages and write joined markdown | ✅ Complete | 9bf8dd8 |
-| F07 | Notice and table parsing | Parse joined markdown into notices, dates, tables, and corrigenda placeholders | ⬜ Next | - |
-| F08 | Confidence and spatial hints | Score notices and summarize optional Mistral coordinate metadata | ⬜ Not started | - |
+| F07 | Notice and table parsing | Parse joined markdown into notices, dates, tables, and corrigenda placeholders | ✅ Complete | - |
+| F08 | Confidence and spatial hints | Score notices and summarize optional Mistral coordinate metadata | ⬜ Next | - |
 | F09 | Build validated envelope | Assemble and validate the enhanced Pydantic envelope | ⬜ Not started | - |
 | F10 | Public API and bundle writer | Expose parse/write functions and write output bundles | ⬜ Not started | - |
 | F11 | JSON Schema export | Generate schema helpers and checked-in envelope schema | ⬜ Not started | - |
@@ -46,8 +46,8 @@ Session-start prompt:
 | Gate | Condition | Status |
 |------|-----------|--------|
 | Gate 0 | Package processes one PDF source through mocked or replayed Mistral and writes default bundles | ⬜ Not reached |
-| Gate 1 | Regression checks pass on selected cached Mistral OCR JSON fixtures from `prototype_outputs` | 🟨 Partial - F06 representative block-list raw JSON fixture passes; broader cached-response regression waits for parser/envelope stages |
-| Gate 2 | Re-running the same cached response produces deterministic source IDs, run IDs, and notice IDs | ⬜ Not reached |
+| Gate 1 | Regression checks pass on selected cached Mistral OCR JSON fixtures from `prototype_outputs` | 🟨 Partial - F06 representative block-list raw JSON fixture passes; F07 representative inline notice/table/corrigenda snippets pass; broader cached-response regression waits for envelope stages |
+| Gate 2 | Re-running the same cached response produces deterministic source IDs, run IDs, and notice IDs | 🟨 Partial - F07 deterministic notice IDs and content hashes pass on inline joined-markdown fixtures; cached-response rerun waits for later envelope stages |
 | Gate 3 | `from gazette_mistral_pipeline import parse_file, write_envelope` works after install | 🟨 Partial - F02 import smoke and F03 model root exports passed; callable implementation waits for F10 |
 | Gate 4 | Envelope validates against its JSON Schema | ⬜ Not reached |
 | Gate 5 | Fresh virtual environment install works as proxy for `pip install git+...` | ⬜ Not reached |
@@ -56,7 +56,7 @@ Session-start prompt:
 
 | ID | Item | Type | Target | Consequence if forgotten |
 |----|------|------|--------|--------------------------|
-| D1 | Current parsing logic is duplicated across notebooks | Active debt | F07/F13 | Parser behavior will drift between prototype and package |
+| D1 | Prototype parsing logic remains in notebooks alongside package parser | Active debt | F13 | Parser behavior can drift if notebooks are not converted into thin package examples |
 | D2 | Existing notebooks may contain stale execution output and paths | Enduring gotcha | - | Visual notebook output may not reflect current code until cells are rerun |
 | D3 | Mistral API calls must be opt-in in tests | Enduring gotcha | - | Normal test runs could become slow, flaky, or billable |
 | D4 | Mistral response JSON may not contain word-level coordinates | Enduring gotcha | - | Spatial hints can improve provenance but cannot promise full reading-order reconstruction |
@@ -76,6 +76,7 @@ Session-start prompt:
 - `specs/F04-pdf-source-loading.md` - completed PDF source loading spec
 - `specs/F05-mistral-api-pass.md` - completed Mistral API pass spec
 - `specs/F06-normalize-and-stitch-pages.md` - completed page normalization and stitching spec
+- `specs/F07-notice-and-table-parsing.md` - completed notice and table parsing spec
 
 ## Session Log
 
@@ -87,5 +88,6 @@ Session-start prompt:
 | 2026-04-25 | F04 PDF source loading | Added source-loading helpers for PDF URLs, local PDFs, JSON manifests, stable run names, source SHA-256 hashes, and invalid-input checks. `python -m pytest` passed. |
 | 2026-04-25 | F05 Mistral API pass | Added stdlib Mistral OCR URL requests, deterministic raw JSON cache/replay helpers, safe `MistralMetadata` population, explicit live-local unsupported behavior, and mocked/replay tests. `python -m pytest` passed. |
 | 2026-04-25 | F06 Normalize and stitch pages | Added page normalization dataclasses/helpers, deterministic sorting, joined markdown rendering/writing, representative raw JSON fixture, and F06 stats. `python -m pytest tests/test_page_normalization.py` and `python -m pytest` passed. |
+| 2026-04-25 | F07 Notice and table parsing | Added pure joined-markdown notice parsing, table extraction, corrigenda placeholders, deterministic hashes/IDs, provenance, and neutral F08 confidence placeholders. `python -m pytest tests/test_notice_parsing.py` and `python -m pytest` passed. |
 
 Add a row here at the end of every session.
