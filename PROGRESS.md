@@ -18,10 +18,10 @@ Session-start prompt:
 
 ## Today
 
-**Current:** F17 ✅ Complete - Add table notice provenance  
-**What:** Table objects now carry parent notice context (`notice_no`, `notice_id`, notice page provenance, and run name when available), so flat table exports keep their notice link even when tables span multiple PDF pages.  
-**Where:** `gazette_mistral_pipeline/models/notice.py`, `gazette_mistral_pipeline/notice_parsing.py`, `gazette_mistral_pipeline/envelope_builder.py`, table/bundle/schema tests  
-**Previous:** F16 ✅ - Exclude post-notice tail complete.
+**Current:** F18 ✅ Complete - Mistral reliability and usage  
+**What:** Live Mistral upload/OCR calls now retry transient failures, raise sanitized structured errors, and record OCR usage/cost plus returned-markdown token estimates in envelope metadata.  
+**Where:** `gazette_mistral_pipeline/mistral_ocr.py`, `gazette_mistral_pipeline/models/config.py`, `gazette_mistral_pipeline/models/source.py`, schema/docs/tests  
+**Previous:** F17 ✅ - Add table notice provenance complete.
 
 ## Work Items
 
@@ -44,12 +44,13 @@ Session-start prompt:
 | F15 | Clean page running headers | Strip repeated gazette page title/date/page-number headers from joined markdown before notice parsing | ✅ Complete | 17ae63d |
 | F16 | Exclude post-notice tail | Keep ads/catalogues/subscriber notes in joined markdown but exclude them from parsed notices | ✅ Complete | a3c3317 |
 | F17 | Add table notice provenance | Add notice number and parent notice context to flattened table objects so table exports remain tied to the notice they came from | ✅ Complete | 9e58929 |
+| F18 | Mistral reliability and usage | Retry transient Mistral failures and record usage/cost metadata for OCR runs | ✅ Complete | - |
 
 ## Quality Gates
 
 | Gate | Condition | Status |
 |------|-----------|--------|
-| Gate 0 | Package processes one PDF source through mocked or replayed Mistral and writes default bundles | ✅ Reached - F10 replay public parse and default bundle writer tests pass offline |
+| Gate 0 | Package processes one PDF source through mocked or replayed Mistral and writes default bundles | ✅ Reached - F10 replay public parse and default bundle writer tests pass offline; F18 mocked live OCR/upload retry and usage metadata tests also pass offline |
 | Gate 1 | Regression checks pass on selected cached Mistral OCR JSON fixtures from `prototype_outputs` | ✅ Reached - `tests/test_cached_mistral_regression.py` runs the full replay pipeline on two committed real-gazette fixtures (2026-04-17 vol 68, 2009-12-11 vol 103), asserts pinned page count, notice/table count ranges, pinned SHA256 hashes, F17 table notice provenance, and verifies F15 running-header cleanup plus F16 post-notice tail exclusion on the 2009 fixture; 6 Gate 1/F15/F16/F17 tests pass offline |
 | Gate 2 | Re-running the same cached response produces deterministic source IDs, run IDs, and notice IDs | ✅ Reached - `tests/test_cached_mistral_regression.py` runs each fixture twice and asserts run names, SHA256s, page/notice/table counts, all notice IDs in order, all notice content hashes, and Mistral metadata are byte-identical across runs; 2 Gate 2 parametrized tests pass offline |
 | Gate 3 | `from gazette_mistral_pipeline import parse_file, write_envelope` works after install | ✅ Reached - F12 local fresh-venv install smoke verifies root parse/write/schema imports after install |
@@ -68,6 +69,7 @@ Session-start prompt:
 | D6 | Live local PDF OCR upload/file-reference support | Closed in F14 | - | Local and network PDF paths now upload to Mistral Files with `purpose="ocr"` and OCR by returned `file_id` |
 | D7 | Repeated PDF running headers pollute notice text | Closed in F15 | - | Joined markdown now strips recognizable standalone page title/date/page-number lines at page boundaries before notice parsing |
 | D8 | Post-notice ads and subscriber pages can pollute final notice | Closed in F16 | - | Final parsed notices now stop before detected catalogue, subscriber, and advertisement tail material while joined markdown keeps the full source text |
+| D9 | Local PDF upload retries can duplicate uploaded files after ambiguous transient failures | Enduring gotcha | - | If Mistral receives an upload but the client times out before the response, retrying may create another uploaded file; F18 does not add uploaded-file cleanup controls |
 
 ## Reference Docs
 
@@ -93,6 +95,7 @@ Session-start prompt:
 - `specs/F15-clean-page-running-headers.md` - completed page running header cleanup spec
 - `specs/F16-exclude-post-notice-tail.md` - completed final notice tail exclusion spec
 - `specs/F17-add-table-notice-provenance.md` - completed table notice provenance spec
+- `specs/F18-mistral-reliability-and-usage.md` - planned Mistral retry, error, and usage metadata feature
 
 ## Session Log
 
@@ -119,5 +122,6 @@ Session-start prompt:
 | 2026-04-25 | F15 Clean page running headers | Added conservative page-boundary running header/footer cleanup during markdown stitching while preserving raw OCR pages, covered observed header permutations and 2009 cached replay regression, updated docs, and closed D7. `python -m pytest tests/test_page_normalization.py tests/test_cached_mistral_regression.py` and `python -m pytest` passed. |
 | 2026-04-25 | F16 Exclude post-notice tail | Added conservative final-notice tail detection in notice parsing, kept joined markdown intact, excluded catalogue/subscriber/ad-charge tail material from parsed notices, updated parser marker/docs, and closed D8. `python -m pytest tests/test_notice_parsing.py tests/test_cached_mistral_regression.py` and `python -m pytest` passed. |
 | 2026-04-25 | F17 Add table notice provenance | Added parent notice context fields to extracted tables, stamped them during notice parsing, preserved/backfilled them during envelope flattening, updated docs/schema, and verified flat table bundles keep `notice_no`/`notice_id` links. `python -m pytest tests/test_notice_parsing.py tests/test_envelope_builder.py tests/test_bundle_writer.py tests/test_schema_export.py tests/test_cached_mistral_regression.py` and `python -m pytest` passed. |
+| 2026-04-25 | F18 Mistral reliability and usage | Added configurable retry/backoff for Mistral upload/OCR calls, sanitized structured request and payload errors, `usage_info`/page cost metadata, raw response byte and retry counts, returned-markdown token estimates, schema/docs updates, and mocked retry/error/usage tests. `python -m pytest tests/test_mistral_ocr.py tests/test_public_api.py tests/test_envelope_builder.py tests/test_schema_export.py tests/test_bundle_writer.py`, `python -m pytest tests/test_notebook_examples.py`, and `python -m pytest` passed. |
 
 Add a row here at the end of every session.

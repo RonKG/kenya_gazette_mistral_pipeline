@@ -16,6 +16,22 @@ Reason:
 - They may incur cost.
 - They may fail due to network, rate limits, or service changes.
 
+## Mistral Reliability And Usage
+
+Live Mistral upload and OCR requests retry transient failures such as rate
+limits, gateway/server errors, timeouts, and network errors. Non-retryable
+client/configuration errors should still fail quickly with sanitized messages.
+
+OCR cost metadata is an estimate based on `usage_info.pages_processed` and the
+configured page price. Account tier, batch processing, future pricing changes,
+taxes, or invoice adjustments may differ from the estimate. Returned markdown
+token estimates are only for downstream LLM planning and are not OCR billing
+data.
+
+If a local PDF upload succeeds server-side but the client sees a transient
+failure before receiving the response, a retry can create an additional uploaded
+file in the Mistral workspace. F18 does not add uploaded-file cleanup controls.
+
 ## Mistral Response Shape
 
 The package targets Mistral OCR response JSON. It should support common shapes seen in existing fixtures:

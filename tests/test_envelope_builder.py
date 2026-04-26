@@ -231,6 +231,34 @@ def test_missing_optional_source_and_mistral_metadata_remains_valid() -> None:
     assert env.model_dump(mode="json")
 
 
+def test_mistral_usage_metadata_is_preserved_in_envelope() -> None:
+    mistral = _mistral_mapping()
+    mistral.update(
+        {
+            "usage_info": {"pages_processed": 52, "doc_size_bytes": 12345},
+            "pages_processed": 52,
+            "doc_size_bytes": 12345,
+            "estimated_ocr_cost_usd": 0.052,
+            "raw_response_bytes": 2048,
+            "retry_attempts": 2,
+            "returned_markdown_char_count": 8000,
+            "returned_markdown_estimated_tokens": 2000,
+            "returned_markdown_token_estimate_method": "ceil(markdown_char_count / 4 chars_per_token)",
+        }
+    )
+
+    env = build_envelope(_inputs(mistral=mistral), now=FIXED_NOW)
+
+    assert env.mistral.usage_info == {"pages_processed": 52, "doc_size_bytes": 12345}
+    assert env.mistral.pages_processed == 52
+    assert env.mistral.doc_size_bytes == 12345
+    assert env.mistral.estimated_ocr_cost_usd == pytest.approx(0.052)
+    assert env.mistral.raw_response_bytes == 2048
+    assert env.mistral.retry_attempts == 2
+    assert env.mistral.returned_markdown_estimated_tokens == 2000
+    assert env.model_dump(mode="json")["mistral"]["usage_info"]["pages_processed"] == 52
+
+
 def test_deterministic_generated_time_and_collection_ordering() -> None:
     parsed, scored = _parsed_and_scored(
         "GAZETTE NOTICE NO. 8001\n"

@@ -38,8 +38,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/<owner>/gazette-mistral-pipeline"
-Repository = "https://github.com/<owner>/gazette-mistral-pipeline"
+Homepage = "https://github.com/RonKG/kenya_gazette_mistral_pipeline"
+Repository = "https://github.com/RonKG/kenya_gazette_mistral_pipeline"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -94,6 +94,17 @@ def test_root_schema_helper_loads_checked_in_schema_resource() -> None:
         "warnings",
     ]:
         assert field in schema["properties"]
+    mistral_schema = schema["$defs"]["MistralMetadata"]["properties"]
+    for field in [
+        "usage_info",
+        "pages_processed",
+        "doc_size_bytes",
+        "estimated_ocr_cost_usd",
+        "raw_response_bytes",
+        "retry_attempts",
+        "returned_markdown_estimated_tokens",
+    ]:
+        assert field in mistral_schema
     assert "$id" not in schema
 
 

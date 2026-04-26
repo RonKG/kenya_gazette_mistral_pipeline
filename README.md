@@ -90,6 +90,20 @@ url_env = parse_url("https://example.com/source.pdf", config=live_config)
 file_env = parse_file(Path(r"C:\path\to\Kenya Gazette.pdf"), config=live_config)
 ```
 
+Live OCR requests retry transient Mistral failures by default. The default
+retry policy makes up to three attempts for timeouts, network failures, HTTP
+408, 429, and 5xx responses, while failing fast for client/configuration errors
+such as missing API keys or malformed requests. Retry settings live under
+`GazetteConfig.mistral`.
+
+Mistral OCR usage is recorded under `env.mistral` when present in the raw OCR
+payload. The package stores `usage_info`, `pages_processed`, `doc_size_bytes`,
+`raw_response_bytes`, `retry_attempts`, and an estimated OCR cost. Cost defaults
+to page-based public OCR pricing, `pages_processed / 1000` USD, and can be
+overridden with `mistral.ocr_cost_per_1000_pages_usd`. Returned markdown token
+counts are heuristic estimates for downstream LLM planning, not Mistral OCR
+billing data.
+
 ## Notebook Example
 
 Use `examples/gazette_package_driver.ipynb` as the recommended notebook driver.

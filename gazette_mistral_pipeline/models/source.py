@@ -28,4 +28,13 @@ class MistralMetadata(StrictBase):
     document_url: str | None = None
     mistral_doc_ids: list[str] = Field(default_factory=list)
     page_count: int | None = None
+    usage_info: dict[str, Any] = Field(default_factory=dict)
+    pages_processed: int | None = None
+    doc_size_bytes: int | None = None
+    estimated_ocr_cost_usd: float | None = None
+    raw_response_bytes: int | None = None
+    retry_attempts: int = 0
+    returned_markdown_char_count: int | None = None
+    returned_markdown_estimated_tokens: int | None = None
+    returned_markdown_token_estimate_method: str | None = None
     request_options: dict[str, Any] = Field(default_factory=dict)

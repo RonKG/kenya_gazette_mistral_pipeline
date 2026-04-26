@@ -394,6 +394,18 @@
       "additionalProperties": false,
       "description": "Metadata for the Mistral OCR request and cached response.",
       "properties": {
+        "doc_size_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Doc Size Bytes"
+        },
         "document_url": {
           "anyOf": [
             {
@@ -405,6 +417,18 @@
           ],
           "default": null,
           "title": "Document Url"
+        },
+        "estimated_ocr_cost_usd": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Estimated Ocr Cost Usd"
         },
         "mistral_doc_ids": {
           "items": {
@@ -428,6 +452,18 @@
           ],
           "default": null,
           "title": "Page Count"
+        },
+        "pages_processed": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pages Processed"
         },
         "raw_json_path": {
           "anyOf": [
@@ -453,9 +489,67 @@
           "default": null,
           "title": "Raw Json Sha256"
         },
+        "raw_response_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw Response Bytes"
+        },
         "request_options": {
           "additionalProperties": true,
           "title": "Request Options",
+          "type": "object"
+        },
+        "retry_attempts": {
+          "default": 0,
+          "title": "Retry Attempts",
+          "type": "integer"
+        },
+        "returned_markdown_char_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Returned Markdown Char Count"
+        },
+        "returned_markdown_estimated_tokens": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Returned Markdown Estimated Tokens"
+        },
+        "returned_markdown_token_estimate_method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Returned Markdown Token Estimate Method"
+        },
+        "usage_info": {
+          "additionalProperties": true,
+          "title": "Usage Info",
           "type": "object"
         }
       },

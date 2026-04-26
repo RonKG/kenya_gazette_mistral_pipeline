@@ -12,6 +12,8 @@ import pytest
 from gazette_mistral_pipeline.mistral_ocr import (
     MISTRAL_FILES_URL,
     MISTRAL_OCR_URL,
+    MistralPayloadError,
+    MistralRequestError,
     build_file_id_ocr_body,
     build_document_url_ocr_body,
     load_raw_mistral_json,
@@ -143,6 +145,7 @@ def test_pdf_url_live_ocr_uses_stdlib_post_and_writes_metadata(
         "source_type": "pdf_url",
         "model": "mistral-ocr-latest",
         "timeout_seconds": 12.5,
+        "max_attempts": 3,
         "replay": False,
         "document_type": "document_url",
     }
@@ -224,6 +227,7 @@ def test_local_pdf_live_ocr_uploads_file_then_posts_file_id(
         "source_type": "local_pdf",
         "model": "mistral-ocr-latest",
         "timeout_seconds": 12.5,
+        "max_attempts": 3,
         "replay": False,
         "document_type": "file_id",
         "uploaded_file_id": "file_abc123",
@@ -437,5 +441,238 @@ def test_missing_api_key_for_live_local_pdf_fails_before_upload(
         run_mistral_ocr(source, cache_dir=tmp_path)
 
     assert not list(tmp_path.glob("*.raw.json"))
+
+
+def test_retryable_ocr_http_error_retries_and_records_usage(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = {
+        "id": "doc_retry",
+        "model": "mistral-ocr-latest",
+        "pages": [{"index": 0, "markdown": "text"}],
+        "usage_info": {"pages_processed": 52, "doc_size_bytes": 12345},
+    }
+    calls: list[urllib.request.Request] = []
+    sleeps: list[float] = []
+
+    def fake_urlopen(request: urllib.request.Request, timeout: float) -> _FakeResponse:
+        _ = timeout
+        calls.append(request)
+        if len(calls) == 1:
+            raise urllib.error.HTTPError(
+                MISTRAL_OCR_URL,
+                429,
+                "Too Many Requests",
+                hdrs={"Retry-After": "0"},
+                fp=io.BytesIO(b'{"error":"rate limit"}'),
+            )
+        return _FakeResponse(_canonical_json_bytes(payload))
+
+    monkeypatch.setenv("MISTRAL_API_KEY_TEST", "test-key-123")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr("gazette_mistral_pipeline.mistral_ocr.time.sleep", sleeps.append)
+    config = GazetteConfig(mistral={
+        "api_key_env": "MISTRAL_API_KEY_TEST",
+        "retry_base_delay_seconds": 0,
+        "ocr_cost_per_1000_pages_usd": 1.0,
+    })
+
+    result = run_mistral_ocr(_pdf_url_source(), config=config, cache_dir=tmp_path)
+
+    assert len(calls) == 2
+    assert sleeps == []
+    assert result.metadata.retry_attempts == 1
+    assert result.metadata.usage_info == {"pages_processed": 52, "doc_size_bytes": 12345}
+    assert result.metadata.pages_processed == 52
+    assert result.metadata.doc_size_bytes == 12345
+    assert result.metadata.estimated_ocr_cost_usd == pytest.approx(0.052)
+    assert result.metadata.raw_response_bytes == len(_canonical_json_bytes(payload))
+    assert Path(result.metadata.raw_json_path).is_file()
+
+
+def test_retry_after_header_controls_retry_sleep(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = {
+        "id": "doc_retry_after",
+        "model": "mistral-ocr-latest",
+        "pages": [{"index": 0, "markdown": "text"}],
+    }
+    calls = 0
+    sleeps: list[float] = []
+
+    def fake_urlopen(request: urllib.request.Request, timeout: float) -> _FakeResponse:
+        nonlocal calls
+        _ = (request, timeout)
+        calls += 1
+        if calls == 1:
+            raise urllib.error.HTTPError(
+                MISTRAL_OCR_URL,
+                503,
+                "Unavailable",
+                hdrs={"Retry-After": "2"},
+                fp=io.BytesIO(b"temporary"),
+            )
+        return _FakeResponse(_canonical_json_bytes(payload))
+
+    monkeypatch.setenv("MISTRAL_API_KEY_TEST", "test-key-123")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr("gazette_mistral_pipeline.mistral_ocr.time.sleep", sleeps.append)
+    config = GazetteConfig(mistral={
+        "api_key_env": "MISTRAL_API_KEY_TEST",
+        "retry_base_delay_seconds": 99,
+        "retry_max_delay_seconds": 10,
+    })
+
+    run_mistral_ocr(_pdf_url_source(), config=config, cache_dir=tmp_path)
+
+    assert sleeps == [2.0]
+
+
+def test_non_retryable_http_error_fails_without_retry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+
+    def fake_urlopen(request: urllib.request.Request, timeout: float) -> None:
+        nonlocal calls
+        _ = (request, timeout)
+        calls += 1
+        raise urllib.error.HTTPError(
+            MISTRAL_OCR_URL,
+            400,
+            "Bad Request",
+            hdrs={},
+            fp=io.BytesIO(b'{"error":"bad request for secret-token"}'),
+        )
+
+    monkeypatch.setenv("MISTRAL_API_KEY_TEST", "secret-token")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    config = GazetteConfig(mistral={"api_key_env": "MISTRAL_API_KEY_TEST"})
+
+    with pytest.raises(MistralRequestError) as excinfo:
+        run_mistral_ocr(_pdf_url_source(), config=config, cache_dir=tmp_path)
+
+    assert calls == 1
+    assert excinfo.value.status_code == 400
+    assert excinfo.value.retryable is False
+    assert excinfo.value.attempts == 1
+    assert "secret-token" not in str(excinfo.value)
+    assert not list(tmp_path.glob("*.raw.json"))
+
+
+def test_network_errors_retry_then_raise_structured_error(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+
+    def fake_urlopen(request: urllib.request.Request, timeout: float) -> None:
+        nonlocal calls
+        _ = (request, timeout)
+        calls += 1
+        raise urllib.error.URLError("temporary dns failure")
+
+    monkeypatch.setenv("MISTRAL_API_KEY_TEST", "test-key-123")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr("gazette_mistral_pipeline.mistral_ocr.time.sleep", lambda _: None)
+    config = GazetteConfig(mistral={
+        "api_key_env": "MISTRAL_API_KEY_TEST",
+        "max_attempts": 2,
+        "retry_base_delay_seconds": 0,
+    })
+
+    with pytest.raises(MistralRequestError) as excinfo:
+        run_mistral_ocr(_pdf_url_source(), config=config, cache_dir=tmp_path)
+
+    assert calls == 2
+    assert excinfo.value.retryable is True
+    assert excinfo.value.attempts == 2
+    assert "temporary dns failure" in str(excinfo.value)
+    assert not list(tmp_path.glob("*.raw.json"))
+
+
+def test_empty_live_ocr_payload_fails_without_cache(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_urlopen(request: urllib.request.Request, timeout: float) -> _FakeResponse:
+        _ = (request, timeout)
+        return _FakeResponse(b"   ")
+
+    monkeypatch.setenv("MISTRAL_API_KEY_TEST", "test-key-123")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    config = GazetteConfig(mistral={"api_key_env": "MISTRAL_API_KEY_TEST"})
+
+    with pytest.raises(MistralPayloadError, match="empty"):
+        run_mistral_ocr(_pdf_url_source(), config=config, cache_dir=tmp_path)
+
+    assert not list(tmp_path.glob("*.raw.json"))
+
+
+def test_local_pdf_upload_retries_before_ocr(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pdf_path = tmp_path / "sample.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\nlocal pdf\n")
+    source = PdfSource(
+        source_type="local_pdf",
+        source_value=str(pdf_path),
+        run_name="sample",
+        source_sha256="c" * 64,
+    )
+    payload = {
+        "id": "doc_uploaded",
+        "model": "mistral-ocr-latest",
+        "pages": [{"index": 0, "markdown": "text"}],
+    }
+    urls: list[str] = []
+
+    def fake_urlopen(request: urllib.request.Request, timeout: float) -> _FakeResponse:
+        _ = timeout
+        urls.append(request.full_url)
+        if request.full_url == MISTRAL_FILES_URL and urls.count(MISTRAL_FILES_URL) == 1:
+            raise urllib.error.HTTPError(
+                MISTRAL_FILES_URL,
+                503,
+                "Unavailable",
+                hdrs={},
+                fp=io.BytesIO(b"temporary upload failure"),
+            )
+        if request.full_url == MISTRAL_FILES_URL:
+            return _FakeResponse(
+                _canonical_json_bytes(
+                    {
+                        "id": "file_retry_123",
+                        "filename": "sample.pdf",
+                        "bytes": pdf_path.stat().st_size,
+                    }
+                )
+            )
+        if request.full_url == MISTRAL_OCR_URL:
+            assert json.loads((request.data or b"").decode("utf-8")) == {
+                "model": "mistral-ocr-latest",
+                "document": {"file_id": "file_retry_123"},
+            }
+            return _FakeResponse(_canonical_json_bytes(payload))
+        raise AssertionError(f"unexpected URL: {request.full_url}")
+
+    monkeypatch.setenv("MISTRAL_API_KEY_TEST", "test-key-123")
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr("gazette_mistral_pipeline.mistral_ocr.time.sleep", lambda _: None)
+    config = GazetteConfig(mistral={
+        "api_key_env": "MISTRAL_API_KEY_TEST",
+        "retry_base_delay_seconds": 0,
+    })
+
+    result = run_mistral_ocr(source, config=config, cache_dir=tmp_path)
+
+    assert urls == [MISTRAL_FILES_URL, MISTRAL_FILES_URL, MISTRAL_OCR_URL]
+    assert result.metadata.retry_attempts == 1
+    assert result.metadata.request_options["uploaded_file_id"] == "file_retry_123"
 
 

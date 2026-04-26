@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from gazette_mistral_pipeline.confidence_scoring import score_parsed_notices
 from gazette_mistral_pipeline.envelope_builder import EnvelopeBuildInputs, build_envelope
 from gazette_mistral_pipeline.mistral_ocr import run_mistral_ocr
-from gazette_mistral_pipeline.models import Envelope, GazetteConfig, PdfSource
+from gazette_mistral_pipeline.models import Envelope, GazetteConfig, MistralMetadata, PdfSource
 from gazette_mistral_pipeline.notice_parsing import parse_joined_markdown
 from gazette_mistral_pipeline.page_normalization import (
     StitchedMarkdownResult,
@@ -51,6 +52,11 @@ def parse_source(
 
     pages = normalize_mistral_pages(ocr_result.raw_json)
     markdown = stitch_markdown_pages(pages)
+    mistral_metadata = _mistral_metadata_with_markdown_estimate(
+        ocr_result.metadata,
+        markdown=markdown,
+        config=resolved_config,
+    )
     joined_path = None
     if stage_dir is not None:
         joined_path = write_joined_markdown(
@@ -80,7 +86,7 @@ def parse_source(
     return build_envelope(
         EnvelopeBuildInputs(
             source=resolved_source,
-            mistral=ocr_result.metadata,
+            mistral=mistral_metadata,
             f06_stats=stitched,
             parsed=parsed,
             scored=scored,
@@ -117,6 +123,31 @@ def _validate_runtime_mode(source: PdfSource, config: GazetteConfig) -> None:
             "Live Mistral OCR requires runtime.output_dir so raw OCR cache artifacts "
             "are written to an explicit stage directory."
         )
+
+
+def _mistral_metadata_with_markdown_estimate(
+    metadata: MistralMetadata,
+    *,
+    markdown: str,
+    config: GazetteConfig,
+) -> MistralMetadata:
+    if not config.mistral.estimate_returned_markdown_tokens:
+        return metadata
+
+    char_count = len(markdown)
+    estimated_tokens = math.ceil(
+        char_count / config.mistral.markdown_token_estimate_chars_per_token
+    )
+    return metadata.model_copy(
+        update={
+            "returned_markdown_char_count": char_count,
+            "returned_markdown_estimated_tokens": estimated_tokens,
+            "returned_markdown_token_estimate_method": (
+                "ceil(markdown_char_count / "
+                f"{config.mistral.markdown_token_estimate_chars_per_token:g} chars_per_token)"
+            ),
+        }
+    )
 
 
 __all__ = [

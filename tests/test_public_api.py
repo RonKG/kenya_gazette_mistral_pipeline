@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 import gazette_mistral_pipeline as gmp
 import gazette_mistral_pipeline.mistral_ocr as mistral_ocr
-from gazette_mistral_pipeline.models import Envelope, GazetteConfig, RuntimeOptions
+from gazette_mistral_pipeline.models import Envelope, GazetteConfig, MistralOptions, RuntimeOptions
 
 KENYALAW_URL = (
     "https://new.kenyalaw.org/akn/ke/officialGazette/2026-04-17/68/"
@@ -53,6 +53,7 @@ def _raw_payload() -> dict[str, object]:
                 "images": [{"bbox": [10, 20, 30, 40]}],
             }
         ],
+        "usage_info": {"pages_processed": 1, "doc_size_bytes": 987},
     }
 
 
@@ -84,6 +85,12 @@ def test_runtime_options_defaults_and_validation(tmp_path: Path) -> None:
     assert config.runtime.output_dir == tmp_path / "stage"
     assert config.runtime.allow_live_mistral is True
 
+    mistral_defaults = MistralOptions()
+    assert mistral_defaults.max_attempts == 3
+    assert mistral_defaults.retry_status_codes == (408, 429, 500, 502, 503, 504)
+    assert mistral_defaults.ocr_cost_per_1000_pages_usd == 1.0
+    assert mistral_defaults.estimate_returned_markdown_tokens is True
+
 
 def test_parse_url_replay_orchestrates_f04_to_f09_without_network_or_env(
     tmp_path: Path,
@@ -109,6 +116,9 @@ def test_parse_url_replay_orchestrates_f04_to_f09_without_network_or_env(
     assert env.source.run_name == "gazette_2026-04-17_68"
     assert env.mistral.raw_json_path == str(replay_path)
     assert env.mistral.request_options["replay"] is True
+    assert env.mistral.pages_processed == 1
+    assert env.mistral.estimated_ocr_cost_usd == pytest.approx(0.001)
+    assert env.mistral.returned_markdown_estimated_tokens is not None
     assert env.stats.document_count == 1
     assert env.stats.page_count == 1
     assert env.stats.notice_count == 1
@@ -211,6 +221,9 @@ def test_live_url_with_mocked_http_writes_raw_cache_and_envelope(
 
     assert env.stats.notice_count == 1
     assert env.mistral.request_options["replay"] is False
+    assert env.mistral.pages_processed == 1
+    assert env.mistral.retry_attempts == 0
+    assert env.mistral.returned_markdown_char_count == env.stats.char_count_markdown
     assert env.mistral.raw_json_path == str(tmp_path / "stage" / "gazette_2026-04-17_68.raw.json")
     assert Path(env.mistral.raw_json_path).is_file()
     assert (tmp_path / "stage" / "gazette_2026-04-17_68_joined.md").is_file()

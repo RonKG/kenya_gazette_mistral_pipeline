@@ -133,6 +133,13 @@ The envelope is Mistral-specific. It should not pretend to contain Docling field
 - `raw_json_sha256`
 - `mistral_doc_ids`
 - `page_count`
+- `usage_info`
+- `pages_processed`
+- `doc_size_bytes`
+- `estimated_ocr_cost_usd`
+- `raw_response_bytes`
+- `retry_attempts`
+- optional returned markdown token estimates for downstream planning
 - `request_options`
 
 ## Notice Contract
