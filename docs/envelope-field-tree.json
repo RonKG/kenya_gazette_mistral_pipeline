@@ -1,0 +1,224 @@
+{
+  "library_version": "string",
+  "schema_version": "string",
+  "output_format_version": "integer",
+  "generated_at_utc": "datetime-string",
+  "source": {
+    "source_type": "pdf_url | local_pdf",
+    "source_value": "string",
+    "run_name": "string",
+    "source_sha256": "string | null",
+    "source_metadata_path": "string | null"
+  },
+  "mistral": {
+    "model": "string",
+    "raw_json_path": "string | null",
+    "raw_json_sha256": "string | null",
+    "document_url": "string | null",
+    "mistral_doc_ids": [
+      "string"
+    ],
+    "page_count": "integer | null",
+    "usage_info": {
+      "...": "any"
+    },
+    "pages_processed": "integer | null",
+    "doc_size_bytes": "integer | null",
+    "estimated_ocr_cost_usd": "number | null",
+    "raw_response_bytes": "integer | null",
+    "retry_attempts": "integer",
+    "returned_markdown_char_count": "integer | null",
+    "returned_markdown_estimated_tokens": "integer | null",
+    "returned_markdown_token_estimate_method": "string | null",
+    "request_options": {
+      "...": "any"
+    }
+  },
+  "stats": {
+    "document_count": "integer",
+    "page_count": "integer",
+    "notice_count": "integer",
+    "table_count": "integer",
+    "char_count_markdown": "integer",
+    "warnings_count": "integer"
+  },
+  "notices": [
+    {
+      "notice_id": "string",
+      "text": "string",
+      "raw_markdown": "string",
+      "table_count": "integer",
+      "provenance": {
+        "header_match": "strict | recovered | inferred | none",
+        "page_span": [
+          "integer",
+          "integer"
+        ],
+        "line_span": [
+          "integer",
+          "integer"
+        ],
+        "raw_header_line": "string | null",
+        "source_markdown_path": "string | null",
+        "stitched_from": [
+          "string"
+        ]
+      },
+      "confidence_scores": {
+        "notice_number": "number",
+        "structure": "number",
+        "boundary": "number",
+        "composite": "number",
+        "band": "high | medium | low",
+        "table": "number | null",
+        "spatial": "number | null"
+      },
+      "content_sha256": "string",
+      "notice_no": "string | null",
+      "dates_found": [
+        "string"
+      ],
+      "title_lines": [
+        "string"
+      ],
+      "tables": [
+        {
+          "headers": [
+            "string"
+          ],
+          "rows": [
+            [
+              "string"
+            ]
+          ],
+          "raw_table_markdown": "string",
+          "records": [
+            {
+              "...": "string"
+            }
+          ],
+          "source": "string",
+          "column_count": "integer | null",
+          "notice_no": "string | null",
+          "notice_id": "string | null",
+          "notice_page_span": [
+            "integer",
+            "integer"
+          ],
+          "notice_pages": [
+            "integer"
+          ],
+          "notice_stitched_from": [
+            "string"
+          ],
+          "source_run_name": "string | null",
+          "...": "additional table fields allowed"
+        }
+      ],
+      "confidence_reasons": [
+        "string"
+      ],
+      "other_attributes": {
+        "...": "any"
+      }
+    }
+  ],
+  "document_confidence": {
+    "ocr_quality": "number",
+    "notice_split": "number",
+    "composite": "number",
+    "counts": {
+      "high": "integer",
+      "medium": "integer",
+      "low": "integer"
+    },
+    "mean_composite": "number",
+    "min_composite": "number",
+    "n_notices": "integer",
+    "table_quality": "number | null",
+    "spatial": "number | null",
+    "reasons": [
+      "string"
+    ]
+  },
+  "layout_info": {
+    "available": "boolean",
+    "layout_confidence": "number | null",
+    "pages": [
+      {
+        "...": "any"
+      }
+    ],
+    "positioned_element_count": "integer",
+    "reasons": [
+      "string"
+    ]
+  },
+  "tables": [
+    {
+      "headers": [
+        "string"
+      ],
+      "rows": [
+        [
+          "string"
+        ]
+      ],
+      "raw_table_markdown": "string",
+      "records": [
+        {
+          "...": "string"
+        }
+      ],
+      "source": "string",
+      "column_count": "integer | null",
+      "notice_no": "string | null",
+      "notice_id": "string | null",
+      "notice_page_span": [
+        "integer",
+        "integer"
+      ],
+      "notice_pages": [
+        "integer"
+      ],
+      "notice_stitched_from": [
+        "string"
+      ],
+      "source_run_name": "string | null",
+      "...": "additional table fields allowed"
+    }
+  ],
+  "corrigenda": [
+    {
+      "raw_text": "string",
+      "target_notice_no": "string | null",
+      "target_year": "integer | null",
+      "amendment": "string | null",
+      "provenance": {
+        "header_match": "strict | recovered | inferred | none",
+        "page_span": [
+          "integer",
+          "integer"
+        ],
+        "line_span": [
+          "integer",
+          "integer"
+        ],
+        "raw_header_line": "string | null",
+        "source_markdown_path": "string | null",
+        "stitched_from": [
+          "string"
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "kind": "string",
+      "message": "string",
+      "where": {
+        "...": "any"
+      }
+    }
+  ]
+}

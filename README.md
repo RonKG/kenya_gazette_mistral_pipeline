@@ -104,6 +104,11 @@ overridden with `mistral.ocr_cost_per_1000_pages_usd`. Returned markdown token
 counts are heuristic estimates for downstream LLM planning, not Mistral OCR
 billing data.
 
+## Envelope structure
+
+See `docs/envelope-field-tree.json` for a concise JSON tree of all envelope
+fields, nested objects, and list/multiplicity structure.
+
 ## Notebook Example
 
 Use `examples/gazette_package_driver.ipynb` as the recommended notebook driver.
