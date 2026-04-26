@@ -43,7 +43,7 @@ Session-start prompt:
 | F14 | Live local PDF upload support | Upload local or network PDF paths to Mistral, OCR by `file_id`, and keep `parse_file` live-capable | ✅ Complete | 17ae63d |
 | F15 | Clean page running headers | Strip repeated gazette page title/date/page-number headers from joined markdown before notice parsing | ✅ Complete | 17ae63d |
 | F16 | Exclude post-notice tail | Keep ads/catalogues/subscriber notes in joined markdown but exclude them from parsed notices | ✅ Complete | a3c3317 |
-| F17 | Add table notice provenance | Add notice number and parent notice context to flattened table objects so table exports remain tied to the notice they came from | ✅ Complete | - |
+| F17 | Add table notice provenance | Add notice number and parent notice context to flattened table objects so table exports remain tied to the notice they came from | ✅ Complete | 9e58929 |
 
 ## Quality Gates
 
