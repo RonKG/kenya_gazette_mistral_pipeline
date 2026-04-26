@@ -51,6 +51,12 @@ class ExtractedTable(StrictBase):
     records: list[dict[str, str]] = Field(default_factory=list)
     source: str = "markdown_table_heuristic"
     column_count: int | None = None
+    notice_no: str | None = None
+    notice_id: str | None = None
+    notice_page_span: tuple[int, int] | None = None
+    notice_pages: list[int] = Field(default_factory=list)
+    notice_stitched_from: list[str] = Field(default_factory=list)
+    source_run_name: str | None = None
 
 
 class Corrigendum(StrictBase):

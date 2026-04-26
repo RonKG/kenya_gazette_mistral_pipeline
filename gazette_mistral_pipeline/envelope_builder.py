@@ -53,7 +53,7 @@ def build_envelope(
     _validate_notice_table_counts(parsed.notices)
     _validate_notice_table_counts(notices)
 
-    tables = _flatten_scored_notice_tables(notices)
+    tables = _flatten_scored_notice_tables(notices, source_run_name=source.run_name)
     _validate_table_counts(parsed, tables)
 
     warnings = list(scored.warnings)
@@ -181,8 +181,67 @@ def _validate_notice_table_counts(notices: tuple[Notice, ...] | list[Notice]) ->
             )
 
 
-def _flatten_scored_notice_tables(notices: list[Notice]) -> list[ExtractedTable]:
-    return [table for notice in notices for table in notice.tables]
+def _flatten_scored_notice_tables(
+    notices: list[Notice],
+    *,
+    source_run_name: str | None = None,
+) -> list[ExtractedTable]:
+    return [
+        _table_with_missing_parent_context(
+            table,
+            notice=notice,
+            source_run_name=source_run_name,
+        )
+        for notice in notices
+        for table in notice.tables
+    ]
+
+
+def _table_with_missing_parent_context(
+    table: ExtractedTable,
+    *,
+    notice: Notice,
+    source_run_name: str | None,
+) -> ExtractedTable:
+    context: dict[str, object] = {
+        "notice_no": notice.notice_no,
+        "notice_id": notice.notice_id,
+        "notice_page_span": notice.provenance.page_span,
+        "notice_pages": _notice_pages_from_stitched_from(notice.provenance.stitched_from),
+        "notice_stitched_from": list(notice.provenance.stitched_from),
+    }
+    if source_run_name is not None:
+        context["source_run_name"] = source_run_name
+
+    missing = {
+        key: value
+        for key, value in context.items()
+        if _table_context_value_missing(getattr(table, key, None), value)
+    }
+    if not missing:
+        return table
+    return table.model_copy(update=missing)
+
+
+def _table_context_value_missing(current: object, replacement: object) -> bool:
+    if current is None:
+        return replacement is not None
+    if isinstance(current, list) and not current:
+        return bool(replacement)
+    return False
+
+
+def _notice_pages_from_stitched_from(stitched_from: list[str]) -> list[int]:
+    pages: list[int] = []
+    for source in stitched_from:
+        prefix, separator, value = source.partition(":")
+        if prefix != "page" or not separator:
+            continue
+        try:
+            pages.append(int(value))
+        except ValueError:
+            continue
+    return pages
 
 
 def _validate_table_counts(

@@ -113,6 +113,12 @@ def test_optional_writer_outputs_and_document_index_are_deterministic(tmp_path: 
     trace = json.loads(first["debug_trace"].read_text(encoding="utf-8"))
     assert len(notices) == env.stats.notice_count
     assert len(tables) == env.stats.table_count
+    assert tables[0]["notice_no"] == env.notices[0].notice_no == "5969"
+    assert tables[0]["notice_id"] == env.notices[0].notice_id
+    assert tables[0]["notice_pages"] == [0]
+    assert tables[0]["notice_page_span"] == [0, 0]
+    assert tables[0]["notice_stitched_from"] == ["page:0"]
+    assert tables[0]["source_run_name"] == env.source.run_name
     assert set(index["artifacts"]) == set(first)
     assert index["artifacts"]["notices"] == "gazette_2026-04-17_68_notices.json"
     assert index["artifacts"]["document_index"] == "gazette_2026-04-17_68_index.json"

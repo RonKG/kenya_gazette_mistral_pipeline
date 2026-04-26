@@ -235,6 +235,66 @@
           "title": "Headers",
           "type": "array"
         },
+        "notice_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notice Id"
+        },
+        "notice_no": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notice No"
+        },
+        "notice_page_span": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notice Page Span"
+        },
+        "notice_pages": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Notice Pages",
+          "type": "array"
+        },
+        "notice_stitched_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notice Stitched From",
+          "type": "array"
+        },
         "raw_table_markdown": {
           "title": "Raw Table Markdown",
           "type": "string"
@@ -263,6 +323,18 @@
           "default": "markdown_table_heuristic",
           "title": "Source",
           "type": "string"
+        },
+        "source_run_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Run Name"
         }
       },
       "required": [
@@ -785,5 +857,5 @@
   "type": "object",
   "x-library-version": "0.1.0",
   "x-output-format-version": 1,
-  "x-schema-version": "0.1"
+  "x-schema-version": "0.2"
 }

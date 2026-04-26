@@ -141,6 +141,9 @@ def test_gate1_cached_fixture_processes_and_validates(
     assert env.stats.table_count >= spec["expected_tables_min"], (
         f"Table count {env.stats.table_count} dropped below minimum {spec['expected_tables_min']}"
     )
+    assert all(table.notice_no for table in env.tables)
+    assert all(table.notice_id for table in env.tables)
+    assert all(table.source_run_name == spec["run_name"] for table in env.tables)
 
     # Envelope schema validation must pass
     bundle_dir = tmp_path / "bundles"

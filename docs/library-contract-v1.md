@@ -159,6 +159,29 @@ last official notice, `raw_markdown`, `text`, `tables`, and `provenance` for the
 final `Notice` describe only the detected notice span. The full post-notice
 material remains in the joined markdown bundle.
 
+## Table Contract
+
+Each table should include its extracted markdown-table content:
+
+- `headers`
+- `rows`
+- `records`
+- `raw_table_markdown`
+- `source`
+- `column_count`
+
+Tables attached to parsed notices should also carry parent notice context:
+
+- `notice_no`: parent gazette notice number, the primary human/legal link
+- `notice_id`: deterministic parent notice id
+- `notice_page_span`: parent notice page span when it is a single deterministic page, otherwise `null`
+- `notice_pages`: parent notice page indexes derived from `provenance.stitched_from`
+- `notice_stitched_from`: parent notice stitched page labels copied from provenance
+- `source_run_name`: source run name when available
+
+Page fields are secondary provenance only. They are not table identity fields
+because a notice or table can span multiple PDF pages.
+
 ## Bundle Contract
 
 Default bundles should be fast and useful:

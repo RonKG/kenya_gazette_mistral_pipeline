@@ -140,8 +140,41 @@ def test_valid_envelope_happy_path_preserves_versions_counts_and_ordering() -> N
     ]
     assert env.tables == list(env.notices[0].tables)
     assert env.tables == list(parsed.tables)
+    assert env.tables[0].notice_no == env.notices[0].notice_no == "5969"
+    assert env.tables[0].notice_id == env.notices[0].notice_id
+    assert env.tables[0].notice_pages == [0]
+    assert env.tables[0].notice_page_span == (0, 0)
+    assert env.tables[0].notice_stitched_from == ["page:0"]
+    assert env.tables[0].source_run_name == env.source.run_name
     assert env.corrigenda == list(parsed.corrigenda)
     assert env.model_dump(mode="json")["generated_at_utc"]
+
+
+def test_envelope_flattening_backfills_legacy_table_notice_context() -> None:
+    parsed, scored = _parsed_and_scored(_happy_markdown_body())
+    scored_notice = scored.scored_notices[0]
+    legacy_table = scored_notice.tables[0].model_copy(
+        update={
+            "notice_no": None,
+            "notice_id": None,
+            "notice_page_span": None,
+            "notice_pages": [],
+            "notice_stitched_from": [],
+            "source_run_name": None,
+        }
+    )
+    legacy_notice = scored_notice.model_copy(update={"tables": [legacy_table]}, deep=True)
+    legacy_scored = replace(scored, scored_notices=(legacy_notice,))
+
+    env = build_envelope(_inputs(parsed=parsed, scored=legacy_scored), now=FIXED_NOW)
+
+    table = env.tables[0]
+    assert table.notice_no == env.notices[0].notice_no == "5969"
+    assert table.notice_id == env.notices[0].notice_id
+    assert table.notice_pages == [0]
+    assert table.notice_page_span == (0, 0)
+    assert table.notice_stitched_from == ["page:0"]
+    assert table.source_run_name == env.source.run_name
 
 
 def test_degraded_parse_preserves_warnings_and_document_confidence_reasons() -> None:

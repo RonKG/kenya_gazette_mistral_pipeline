@@ -116,12 +116,18 @@ def test_markdown_table_extraction_and_notice_attachment() -> None:
         "| Kajiado/2 | John Doe |\n"
     )
 
-    result = parse_joined_markdown(markdown)
+    result = parse_joined_markdown(markdown, run_name="gazette_test_3000")
 
     table = result.tables[0]
     assert result.table_count == 1
     assert result.notices[0].table_count == 1
     assert result.notices[0].tables[0] == table
+    assert table.notice_no == "3000"
+    assert table.notice_id == result.notices[0].notice_id
+    assert table.notice_page_span == (0, 0)
+    assert table.notice_pages == [0]
+    assert table.notice_stitched_from == ["page:0"]
+    assert table.source_run_name == "gazette_test_3000"
     assert table.headers == ["Parcel", "Owner"]
     assert table.rows == [["Kajiado/1", "Jane Doe"], ["Kajiado/2", "John Doe"]]
     assert table.records == [
@@ -148,11 +154,62 @@ def test_ragged_markdown_table_rows_are_normalized() -> None:
 
     table = tables[0]
     assert table.column_count == 3
+    assert table.model_extra == {}
     assert table.rows == [
         ["Jane", "short", ""],
         ["John", "has", "extra | pipe"],
     ]
     assert "| John | has | extra | pipe |" in table.raw_table_markdown
+
+
+def test_multiple_notice_tables_keep_their_parent_notice_context() -> None:
+    markdown = _joined_notice(
+        "GAZETTE NOTICE NO. 3100\n"
+        "THE FIRST ACT\n\n"
+        "| Parcel | Owner |\n"
+        "| --- | --- |\n"
+        "| First/1 | Jane Doe |\n\n"
+        "GAZETTE NOTICE NO. 3101\n"
+        "THE SECOND ACT\n\n"
+        "| Parcel | Owner |\n"
+        "| --- | --- |\n"
+        "| Second/1 | John Doe |\n"
+    )
+
+    result = parse_joined_markdown(markdown, run_name="gazette_test_multi")
+
+    assert [notice.notice_no for notice in result.notices] == ["3100", "3101"]
+    assert [table.notice_no for table in result.tables] == ["3100", "3101"]
+    assert [table.notice_id for table in result.tables] == [
+        result.notices[0].notice_id,
+        result.notices[1].notice_id,
+    ]
+
+
+def test_table_notice_context_keeps_multi_page_notice_pages_secondary() -> None:
+    markdown = (
+        "---\n\n"
+        "# Document: doc_1\n\n"
+        "---\n\n"
+        "## Index 0\n\n"
+        "GAZETTE NOTICE NO. 3200\n"
+        "THE CROSS PAGE ACT\n\n"
+        "| Parcel | Owner |\n"
+        "| --- | --- |\n"
+        "| Cross/1 | Jane Doe |\n\n"
+        "---\n\n"
+        "## Index 1\n\n"
+        "Continuation on page one."
+    )
+
+    result = parse_joined_markdown(markdown, run_name="gazette_test_cross_page")
+
+    table = result.tables[0]
+    assert table.notice_no == "3200"
+    assert table.notice_id == result.notices[0].notice_id
+    assert table.notice_page_span is None
+    assert table.notice_pages == [0, 1]
+    assert table.notice_stitched_from == ["page:0", "page:1"]
 
 
 def test_date_extraction_variants_keep_source_order() -> None:

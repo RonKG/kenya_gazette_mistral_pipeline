@@ -124,7 +124,6 @@ def parse_joined_markdown(
         start, end = _trim_line_span(lines, header.line_index, next_start)
         raw_markdown = "\n".join(lines[start:end])
         content_sha256 = _sha256(raw_markdown)
-        notice_tables = extract_markdown_tables(raw_markdown)
         provenance = _provenance(
             start=start,
             end=end,
@@ -133,16 +132,24 @@ def parse_joined_markdown(
             source_markdown_path=source_path,
             page_context=page_context,
         )
+        notice_id = _notice_id(
+            run_name=run_name or source_id,
+            line_start=start + 1,
+            notice_order=order,
+            notice_no=header.notice_no,
+            content_sha256=content_sha256,
+            provenance=provenance,
+        )
+        notice_tables = _with_parent_notice_context(
+            extract_markdown_tables(raw_markdown),
+            notice_id=notice_id,
+            notice_no=header.notice_no,
+            provenance=provenance,
+            source_run_name=run_name or source_id,
+        )
         is_corrigendum_candidate = _is_corrigendum_candidate(raw_markdown)
         notice = Notice(
-            notice_id=_notice_id(
-                run_name=run_name or source_id,
-                line_start=start + 1,
-                notice_order=order,
-                notice_no=header.notice_no,
-                content_sha256=content_sha256,
-                provenance=provenance,
-            ),
+            notice_id=notice_id,
             notice_no=header.notice_no,
             dates_found=_dates_found(raw_markdown),
             title_lines=_title_lines(raw_markdown),
@@ -388,6 +395,55 @@ def _pages_for_span(start: int, end: int, page_context: _PageContext) -> list[in
         if start <= line_index < end and page_index not in pages:
             pages.append(page_index)
 
+    return pages
+
+
+def _with_parent_notice_context(
+    tables: tuple[ExtractedTable, ...],
+    *,
+    notice_id: str,
+    notice_no: str | None,
+    provenance: Provenance,
+    source_run_name: str | None,
+) -> tuple[ExtractedTable, ...]:
+    context = _table_parent_notice_context(
+        notice_id=notice_id,
+        notice_no=notice_no,
+        provenance=provenance,
+        source_run_name=source_run_name,
+    )
+    return tuple(table.model_copy(update=context) for table in tables)
+
+
+def _table_parent_notice_context(
+    *,
+    notice_id: str,
+    notice_no: str | None,
+    provenance: Provenance,
+    source_run_name: str | None,
+) -> dict[str, object]:
+    context: dict[str, object] = {
+        "notice_no": notice_no,
+        "notice_id": notice_id,
+        "notice_page_span": provenance.page_span,
+        "notice_pages": _notice_pages_from_stitched_from(provenance.stitched_from),
+        "notice_stitched_from": list(provenance.stitched_from),
+    }
+    if source_run_name is not None:
+        context["source_run_name"] = source_run_name
+    return context
+
+
+def _notice_pages_from_stitched_from(stitched_from: list[str]) -> list[int]:
+    pages: list[int] = []
+    for source in stitched_from:
+        prefix, separator, value = source.partition(":")
+        if prefix != "page" or not separator:
+            continue
+        try:
+            pages.append(int(value))
+        except ValueError:
+            continue
     return pages
 
 

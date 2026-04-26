@@ -65,6 +65,9 @@ the normalized parsing artifact and strips recognizable Kenya Gazette running
 headers/footers at page boundaries before notice parsing. The parser also keeps
 post-notice catalogue/subscriber material in joined markdown while excluding it
 from the final parsed notice when conservative tail markers are present.
+Extracted tables carry parent notice context (`notice_no`, `notice_id`, and
+notice page provenance), so flat table bundles remain tied to the notice they
+came from even when a notice or table spans multiple PDF pages.
 
 Live Mistral runs are opt-in and require an explicit output directory:
 

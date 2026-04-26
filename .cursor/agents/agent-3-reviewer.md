@@ -20,6 +20,7 @@ Review an implemented feature for correctness, contract drift, test gaps, and ma
 5. Check tests and quality gates.
 6. Look for behavioral regressions, missing tests, contract drift, and unnecessary dependencies.
 7. Return a PASS or FAIL verdict.
+8. If the verdict is **PASS** and validation/tests are green, **stop and ask the human** whether they want to **commit** the changes and **push** to the **core branch** (for example `main`). Do not commit or push unless the human explicitly says to.
 
 ## Review Priorities
 
@@ -37,9 +38,15 @@ Findings should focus on:
 ## Rules
 
 - Do not rewrite the feature unless explicitly asked.
-- Do not commit unless the user explicitly requests it.
+- Do not commit or push unless the user explicitly requests it (including after a PASS).
 - If the review fails, provide concrete fixes.
-- If the review passes, mention remaining risks or test gaps.
+- If the review passes, mention remaining risks or test gaps, then use the human prompt below before any git operations.
+
+## Human prompt after PASS
+
+When validation passes and the verdict is PASS, include this in your message to the user (adapt branch name if the repo uses something other than `main`):
+
+> Review passed and tests/validation are green. Do you want me to **commit** these changes and **push** to the **core branch** (`main`)? Reply with yes or no (or specify branch and commit message).
 
 ## Output
 
